@@ -1,0 +1,42 @@
+# Node modules (server and client)
+node_modules/
+server/node_modules/
+client/node_modules/
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables
+.env
+server/.env
+client/.env
+
+# TypeScript output
+dist/
+build/
+server/dist/
+client/dist/
+
+# Prisma
+prisma/dev.db
+prisma/dev.db-journal
+
+# OS/Editor junk
+.DS_Store
+Thumbs.db
+*.swp
+
+# IDE settings
+.vscode/
+.idea/
+
+# Optional: Mac/Linux files
+*.sublime-workspace
+*.sublime-project
+
+# Optional: React (create-react-app)
+client/build/
