@@ -155,6 +155,28 @@ export const newPassword = createAsyncThunk<
   }
 });
 
+// google login
+export const LoginWithgoogle = createAsyncThunk<
+  {
+    success: boolean;
+    message: string;
+  },
+  { code: string },
+  { rejectValue: string }
+>("/auth/google", async (formData, { rejectWithValue }) => {
+  try {
+    const response = await axios.post(
+      "http://localhost:3000/api/auth/google-login",
+      formData,
+      { withCredentials: true }
+    );
+
+    return response.data;
+  } catch (error: any) {
+    return rejectWithValue(error.response?.data || "google login failed");
+  }
+});
+
 const authSlice = createSlice({
   name: "auth",
   initialState,
@@ -241,6 +263,18 @@ const authSlice = createSlice({
         state.isLoading = false;
       })
       .addCase(newPassword.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload || "Verification failed";
+      })
+      // google login
+      .addCase(LoginWithgoogle.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(LoginWithgoogle.fulfilled, (state) => {
+        state.isLoading = false;
+      })
+      .addCase(LoginWithgoogle.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload || "Verification failed";
       });

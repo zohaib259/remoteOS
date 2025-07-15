@@ -17,6 +17,8 @@ import {
   generateRefreshToken,
 } from "../utils/generate-token";
 import crypto from "crypto";
+import { google } from "googleapis";
+import axios from "axios";
 
 // Register
 export const register = async (req: Request, res: Response) => {
@@ -222,6 +224,13 @@ export const login = async (req: Request, res: Response) => {
       return res
         .status(400)
         .send({ success: false, message: "Please verify your email" });
+    }
+
+    if (!existUser.password) {
+      logger.warn("User password is missing");
+      return res
+        .status(400)
+        .send({ success: false, message: "User password is missing" });
     }
 
     const isCorrectPassword = await bcrypt.compare(
@@ -496,5 +505,146 @@ export const newPassword = async (req: Request, res: Response) => {
     res
       .status(500)
       .send({ success: false, message: "Error while resetting password" });
+  }
+};
+
+// Get google login page
+export const googleLogin = async (req: Request, res: Response) => {
+  try {
+    const { code } = req.body;
+
+    if (!code || typeof code !== "string") {
+      logger.error("Code is required and must be a string");
+      return res.status(400).send({
+        success: false,
+        message: "Code is required and must be a string",
+      });
+    }
+    const oauth2Client = new google.auth.OAuth2(
+      process.env.GOOGLE_CLIENT_ID,
+      process.env.GOOGLE_CLIENT_SECRET,
+      "postmessage"
+    );
+
+    const googleResponse = await oauth2Client.getToken(code);
+    oauth2Client.setCredentials(googleResponse.tokens);
+
+    const userRes = await axios.get(
+      `https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=${googleResponse.tokens.access_token}`
+    );
+
+    const { name, email, id, verified_email, picture } = userRes.data as {
+      name: string;
+      email: string;
+      picture: string;
+      id: string;
+      verified_email: boolean;
+    };
+
+    const existUser = await prisma.user.findUnique({
+      where: {
+        email: email,
+      },
+    });
+
+    if (existUser) {
+      const accessToken = generateAccessToken({
+        id: existUser.id,
+        email: existUser.email,
+        role: existUser.role,
+      });
+
+      res.cookie("accessToken", accessToken, {
+        httpOnly: true,
+        sameSite: "strict",
+        secure: true,
+        maxAge: 15 * 60 * 1000,
+      });
+
+      const { token, hashed } = generateRefreshToken();
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + 7);
+
+      await prisma.refreshToken.updateMany({
+        where: { userId: existUser.id },
+        data: {
+          token: hashed,
+          expiresAt,
+        },
+      });
+
+      res.cookie("refreshToken", token, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "strict",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
+
+      return res.status(200).json({
+        success: true,
+        message: "Logged in successfully",
+        accessToken,
+        token,
+      });
+    }
+
+    const newUser = await prisma.user.create({
+      data: {
+        name: name,
+        email: email,
+        provider: "google",
+        providerAccountId: id,
+        profilePicture: picture,
+        verified: verified_email,
+      },
+    });
+
+    // Access Token
+    const accessToken = generateAccessToken({
+      id: newUser.id,
+      email: newUser.email,
+      role: newUser.role,
+    });
+
+    res.cookie("accessToken", accessToken, {
+      httpOnly: true,
+      sameSite: "strict",
+      secure: true,
+      maxAge: 15 * 60 * 1000,
+    });
+
+    const { token, hashed } = generateRefreshToken();
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 7);
+
+    await prisma.refreshToken.create({
+      data: {
+        token: hashed,
+        userId: newUser.id,
+        expiresAt,
+      },
+    });
+
+    res.cookie("refreshToken", token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    const { password: _, ...user } = newUser;
+
+    res.status(200).json({
+      success: true,
+      message: "Loged in successfully",
+      user,
+      accessToken,
+      token,
+    });
+  } catch (error) {
+    logger.error(`Error in getGoogleLoginPage: ${error}`);
+    res
+      .status(500)
+      .send({ success: false, message: "Error in getGoogleLoginPage" });
   }
 };

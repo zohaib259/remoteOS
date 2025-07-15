@@ -6,6 +6,8 @@ import VerifyOtp from "./pages/auth/otp";
 import Test from "./pages/dumy/test";
 import ForgotPassword from "./pages/auth/forgot-password";
 import ResetPasswordPage from "./pages/auth/PasswordResetForm";
+import { GoogleOAuthProvider } from "@react-oauth/google";
+import GoogleAuth from "./components/common/googleAuth";
 
 function App() {
   return (
@@ -28,7 +30,6 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/new-password" element={<ResetPasswordPage />} />
-
           <Route path="/test" element={<Test />} />
         </Routes>
       </Router>

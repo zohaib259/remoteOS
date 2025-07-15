@@ -17,21 +17,21 @@ model User {
   id       Int     @id @default(autoincrement())
   name     String  @unique
   email    String  @unique
-  password String
+  password String?
   role     String  @default("user")
   provider        String?  
-  googleId        String?  
+  providerAccountId        String?  
   profilePicture  String?  
-  refreshToken RefreshToken[]
+  refreshToken RefreshToken[] 
   verified  Boolean  @default(false)
   createdAt DateTime @default(now())
 }
 
 model RefreshToken {
-  id         Int      @id @default(autoincrement())
+  id         Int      @id @default(autoincrement()) @unique 
   token      String   @unique 
   userId     Int
-  user       User     @relation(fields: [userId], references: [id])
+  user       User     @relation(fields: [userId], references: [id], onDelete:Cascade)
   expiresAt  DateTime
   createdAt  DateTime @default(now())
 }

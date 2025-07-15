@@ -1,6 +1,7 @@
 // src/routes/auth.routes.ts
 import express from "express";
 import {
+  googleLogin,
   login,
   newPassword,
   refreshAccessToken,
@@ -63,6 +64,13 @@ router.post("/send-reset-pass-token", (req, res) => {
 
 router.post("/new-password", (req, res) => {
   newPassword(req, res).catch((err) => {
+    logger.error(err);
+    res.status(500).send("Internal Server Error");
+  });
+});
+
+router.post("/google-login", (req, res) => {
+  googleLogin(req, res).catch((err) => {
     logger.error(err);
     res.status(500).send("Internal Server Error");
   });

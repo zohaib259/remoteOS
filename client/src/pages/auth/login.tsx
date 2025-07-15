@@ -13,12 +13,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useForm } from "react-hook-form";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import { FcGoogle } from "react-icons/fc";
 import { Link } from "react-router-dom";
 import { login } from "@/store/auth/auth";
 import { useDispatch } from "react-redux";
 import type { AppDispatch } from "@/store/store";
 import toast from "react-hot-toast";
+import GoogleAuth from "@/components/common/googleAuth";
 
 type LoginFormData = {
   email: string;
@@ -51,8 +51,6 @@ export function Login() {
         toast.error(response?.payload?.message);
       }
     }
-
-    console.log("Login form submitted:", response);
   };
 
   return (
@@ -146,13 +144,7 @@ export function Login() {
           </form>
         </CardContent>
         <CardFooter className="flex-col gap-2">
-          <Button
-            variant="outline"
-            className="w-full flex items-center gap-2 justify-center cursor-pointer"
-          >
-            <FcGoogle size={20} className="text-gray-700" />
-            Login with Google
-          </Button>
+          <GoogleAuth />
         </CardFooter>
       </Card>
     </main>
