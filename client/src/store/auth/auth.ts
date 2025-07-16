@@ -196,7 +196,7 @@ export const LoginWithgoogle = createAsyncThunk<
 // check auth
 
 export const checkAuth = createAsyncThunk<
-  { success: boolean; message: string },
+  { success: boolean; message: string; user: string },
   void,
   { rejectValue: string }
 >("/auth/check-auth", async (_, { rejectWithValue }) => {
@@ -356,8 +356,9 @@ const authSlice = createSlice({
         state.isCheckingAuth = true;
         state.error = null;
       })
-      .addCase(checkAuth.fulfilled, (state) => {
+      .addCase(checkAuth.fulfilled, (state, action) => {
         state.isCheckingAuth = false;
+        state.user = action?.payload?.user;
       })
       .addCase(checkAuth.rejected, (state, action) => {
         state.isCheckingAuth = false;

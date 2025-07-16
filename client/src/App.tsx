@@ -12,10 +12,13 @@ import type { AppDispatch, RootState } from "./store/store";
 import { checkAuth } from "./store/auth/auth";
 import { useSelector } from "react-redux";
 import { HashLoader } from "react-spinners";
+import ProtectedRoutes from "./components/common/protectedRoutes";
 
 function App() {
   const dispatch = useDispatch<AppDispatch>();
-  const { isCheckingAuth } = useSelector((state: RootState) => state.auth);
+  const { isCheckingAuth, user } = useSelector(
+    (state: RootState) => state.auth
+  );
 
   useEffect(() => {
     dispatch(checkAuth());
@@ -49,7 +52,15 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/new-password" element={<ResetPasswordPage />} />
-          <Route path="/test" element={<Test />} />
+
+          <Route
+            path="/test"
+            element={
+              <ProtectedRoutes user={user}>
+                <Test />
+              </ProtectedRoutes>
+            }
+          />
         </Routes>
       </Router>
     </div>

@@ -1,9 +1,24 @@
-import React from 'react'
+import type { ReactNode } from "react";
+import { Navigate } from "react-router-dom";
 
-const protectedRoutes = () => {
-  return (
-    <div>protectedRoutes</div>
-  )
+interface ProtectedRoutesProps {
+  children: ReactNode;
+  user: object;
 }
 
-export default protectedRoutes
+const ProtectedRoutes = ({ user, children }: ProtectedRoutesProps) => {
+  console.log(user, "protected routes");
+
+  if (
+    user === null &&
+    !(
+      location.pathname.includes("/login") ||
+      location.pathname.includes("/register")
+    )
+  ) {
+    return <Navigate to={"/login"} />;
+  }
+  return children;
+};
+
+export default ProtectedRoutes;
