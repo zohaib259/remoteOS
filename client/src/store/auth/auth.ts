@@ -1,4 +1,3 @@
-import ForgotPassword from "@/pages/auth/forgot-password";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import axios from "axios";
@@ -18,12 +17,14 @@ interface AuthState {
   user: any | null;
   isLoading: boolean;
   error: string | null;
+  isCheckingAuth: boolean;
 }
 
 const initialState: AuthState = {
   user: null,
   isLoading: false,
   error: null,
+  isCheckingAuth: true,
 };
 
 // Register thunk
@@ -40,7 +41,9 @@ export const registerUser = createAsyncThunk<
     );
     return response.data;
   } catch (error: any) {
-    return rejectWithValue(error.response?.data || "Registration failed");
+    return rejectWithValue(
+      error.response?.data || "Registration failed. Please try again."
+    );
   }
 });
 
@@ -58,7 +61,9 @@ export const verifyOtp = createAsyncThunk<
     );
     return response.data;
   } catch (error: any) {
-    return rejectWithValue(error.response?.data || "Verification failed");
+    return rejectWithValue(
+      error.response?.data || "Invalid OTP. Please try again."
+    );
   }
 });
 
@@ -82,7 +87,9 @@ export const resendOtp = createAsyncThunk<
     );
     return response.data;
   } catch (error: any) {
-    return rejectWithValue(error.response?.data || "Verification failed");
+    return rejectWithValue(
+      error.response?.data || "Failed to resend OTP. Please try again."
+    );
   }
 });
 
@@ -100,7 +107,9 @@ export const login = createAsyncThunk<
     );
     return response.data;
   } catch (error: any) {
-    return rejectWithValue(error.response?.data || "Verification failed");
+    return rejectWithValue(
+      error.response?.data || "Invalid email or password. Please try again."
+    );
   }
 });
 
@@ -125,7 +134,10 @@ export const forgotPassword = createAsyncThunk<
     );
     return response.data;
   } catch (error: any) {
-    return rejectWithValue(error.response?.data || "Verification failed");
+    return rejectWithValue(
+      error.response?.data ||
+        "Failed to send reset password token. Please try again."
+    );
   }
 });
 
@@ -151,7 +163,9 @@ export const newPassword = createAsyncThunk<
     );
     return response.data;
   } catch (error: any) {
-    return rejectWithValue(error.response?.data || "Verification failed");
+    return rejectWithValue(
+      error.response?.data || "Failed to update password. Please try again."
+    );
   }
 });
 
@@ -173,7 +187,58 @@ export const LoginWithgoogle = createAsyncThunk<
 
     return response.data;
   } catch (error: any) {
-    return rejectWithValue(error.response?.data || "google login failed");
+    return rejectWithValue(
+      error.response?.data || "Google login failed. Please try again."
+    );
+  }
+});
+
+// check auth
+
+export const checkAuth = createAsyncThunk<
+  { success: boolean; message: string },
+  void,
+  { rejectValue: string }
+>("/auth/check-auth", async (_, { rejectWithValue }) => {
+  try {
+    const response = await axios.get(
+      "http://localhost:3000/api/auth/check-auth",
+      {
+        withCredentials: true,
+      }
+    );
+
+    return response.data;
+  } catch (error: any) {
+    if (error.response?.status === 401) {
+      try {
+        const refreshRes = await axios.get(
+          "http://localhost:3000/api/auth/refresh-token",
+          {
+            withCredentials: true,
+          }
+        );
+
+        if (refreshRes.status === 201) {
+          const retryRes = await axios.get(
+            "http://localhost:3000/api/auth/check-auth",
+            {
+              withCredentials: true,
+            }
+          );
+
+          return retryRes.data;
+        }
+      } catch (refreshError: any) {
+        return rejectWithValue(
+          refreshError.response?.data || "Session expired. Please log in again."
+        );
+      }
+    }
+
+    return rejectWithValue(
+      error.response?.data || "Authentication check failed. Please try again."
+    );
   }
 });
 
@@ -199,7 +264,8 @@ const authSlice = createSlice({
       })
       .addCase(registerUser.rejected, (state, action) => {
         state.isLoading = false;
-        state.error = action.payload || "Something went wrong";
+        state.error =
+          action.payload || "Registration failed. Please try again.";
       })
 
       // verify otp
@@ -212,7 +278,7 @@ const authSlice = createSlice({
       })
       .addCase(verifyOtp.rejected, (state, action) => {
         state.isLoading = false;
-        state.error = action.payload || "Verification failed";
+        state.error = action.payload || "Invalid OTP. Please try again.";
       })
 
       // verify otp
@@ -225,7 +291,8 @@ const authSlice = createSlice({
       })
       .addCase(resendOtp.rejected, (state, action) => {
         state.isLoading = false;
-        state.error = action.payload || "Verification failed";
+        state.error =
+          action.payload || "Failed to resend OTP. Please try again.";
       })
 
       // verify otp
@@ -239,7 +306,8 @@ const authSlice = createSlice({
       })
       .addCase(login.rejected, (state, action) => {
         state.isLoading = false;
-        state.error = action.payload || "Verification failed";
+        state.error =
+          action.payload || "Invalid email or password. Please try again.";
       })
 
       // verify otp
@@ -252,7 +320,9 @@ const authSlice = createSlice({
       })
       .addCase(forgotPassword.rejected, (state, action) => {
         state.isLoading = false;
-        state.error = action.payload || "Verification failed";
+        state.error =
+          action.payload ||
+          "Failed to send reset password token. Please try again.";
       })
       // new password
       .addCase(newPassword.pending, (state) => {
@@ -264,7 +334,8 @@ const authSlice = createSlice({
       })
       .addCase(newPassword.rejected, (state, action) => {
         state.isLoading = false;
-        state.error = action.payload || "Verification failed";
+        state.error =
+          action.payload || "Failed to update password. Please try again.";
       })
       // google login
       .addCase(LoginWithgoogle.pending, (state) => {
@@ -276,7 +347,22 @@ const authSlice = createSlice({
       })
       .addCase(LoginWithgoogle.rejected, (state, action) => {
         state.isLoading = false;
-        state.error = action.payload || "Verification failed";
+        state.error =
+          action.payload || "Google login failed. Please try again.";
+      })
+
+      // check auth
+      .addCase(checkAuth.pending, (state) => {
+        state.isCheckingAuth = true;
+        state.error = null;
+      })
+      .addCase(checkAuth.fulfilled, (state) => {
+        state.isCheckingAuth = false;
+      })
+      .addCase(checkAuth.rejected, (state, action) => {
+        state.isCheckingAuth = false;
+        state.error =
+          action.payload || "Google login failed. Please try again.";
       });
   },
 });

@@ -1,7 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import logger from "../utils/logger";
 import jwt from "jsonwebtoken";
-import { refreshAccessToken } from "../controller/auth.controller";
 
 declare module "express-serve-static-core" {
   interface Request {

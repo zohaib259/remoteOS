@@ -44,7 +44,7 @@ router.post("/login", (req, res) => {
   });
 });
 
-router.post("/refresh-token", (req, res) => {
+router.get("/refresh-token", (req, res) => {
   refreshAccessToken(req, res).catch((err) => {
     logger.error(err);
     res.status(500).send("Internal Server Error");
@@ -74,6 +74,11 @@ router.post("/google-login", (req, res) => {
     logger.error(err);
     res.status(500).send("Internal Server Error");
   });
+});
+
+router.get("/check-auth", authMiddleware, (req, res, next) => {
+  const user = req.user;
+  res.json({ success: true, message: "User Authenticated", user });
 });
 
 export default router;

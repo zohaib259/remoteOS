@@ -9,7 +9,6 @@ const ProtectedPage: React.FC = () => {
         method: "POST",
         credentials: "include", // ✅ Important to send cookies
       });
-      console.log(response.statusText, 1);
 
       if (response.status === 401) {
         const response2 = await fetch(
@@ -23,7 +22,7 @@ const ProtectedPage: React.FC = () => {
           console.log(response2.statusText);
         }
       }
-      
+
       if (response.status === 403) {
         setMessage(response.statusText);
       }

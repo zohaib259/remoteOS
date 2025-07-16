@@ -6,10 +6,29 @@ import VerifyOtp from "./pages/auth/otp";
 import Test from "./pages/dumy/test";
 import ForgotPassword from "./pages/auth/forgot-password";
 import ResetPasswordPage from "./pages/auth/PasswordResetForm";
-import { GoogleOAuthProvider } from "@react-oauth/google";
-import GoogleAuth from "./components/common/googleAuth";
+import { useEffect } from "react";
+import { useDispatch } from "react-redux";
+import type { AppDispatch, RootState } from "./store/store";
+import { checkAuth } from "./store/auth/auth";
+import { useSelector } from "react-redux";
+import { HashLoader } from "react-spinners";
 
 function App() {
+  const dispatch = useDispatch<AppDispatch>();
+  const { isCheckingAuth } = useSelector((state: RootState) => state.auth);
+
+  useEffect(() => {
+    dispatch(checkAuth());
+  }, []);
+
+  if (isCheckingAuth) {
+    return (
+      <div className="w-screen h-screen flex justify-center items-center">
+        <HashLoader size={40} color={"#065b56"} />
+      </div>
+    );
+  }
+
   return (
     <div>
       <Toaster
