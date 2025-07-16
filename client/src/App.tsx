@@ -3,7 +3,6 @@ import { Register } from "./pages/auth/register";
 import { Login } from "./pages/auth/login";
 import { Toaster } from "react-hot-toast";
 import VerifyOtp from "./pages/auth/otp";
-import Test from "./pages/dumy/test";
 import ForgotPassword from "./pages/auth/forgot-password";
 import ResetPasswordPage from "./pages/auth/PasswordResetForm";
 import { useEffect } from "react";
@@ -13,6 +12,7 @@ import { checkAuth } from "./store/auth/auth";
 import { useSelector } from "react-redux";
 import { HashLoader } from "react-spinners";
 import ProtectedRoutes from "./components/common/protectedRoutes";
+import GetStarted from "./pages/get-started/getStarted";
 
 function App() {
   const dispatch = useDispatch<AppDispatch>();
@@ -54,10 +54,10 @@ function App() {
           <Route path="/new-password" element={<ResetPasswordPage />} />
 
           <Route
-            path="/test"
+            path="/get-started"
             element={
               <ProtectedRoutes user={user}>
-                <Test />
+                <GetStarted />
               </ProtectedRoutes>
             }
           />

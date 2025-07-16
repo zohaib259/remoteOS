@@ -17,6 +17,19 @@
   --color-custom-900: #065b56;
   --color-custom-950: #003937;
 }
+@theme inline {
+  --color-watercourse-50: #edfcf5;
+  --color-watercourse-100: #d4f7e4;
+  --color-watercourse-200: #adedce;
+  --color-watercourse-300: #77deb3;
+  --color-watercourse-400: #40c793;
+  --color-watercourse-500: #1dac7a;
+  --color-watercourse-600: #108b62;
+  --color-watercourse-700: #0c6a4d;
+  --color-watercourse-800: #0d5841;
+  --color-watercourse-900: #0b4937;
+  --color-watercourse-950: #05291f;
+}
 
 /* Global Theme Tokens */
 @theme {
