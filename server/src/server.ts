@@ -9,6 +9,7 @@ import { errorhandler } from "./middlewares/errorHandler";
 import authRoutes from "./routes/auth.router";
 import RedisStore from "rate-limit-redis";
 import cookieParser from "cookie-parser";
+import collabRoomRoutes from "./routes/collabRoom.router";
 
 dotenv.config();
 
@@ -89,7 +90,6 @@ app.use(
 );
 
 // Auth routes
-
 app.use(
   "/api/auth",
   (req: Request, res: Response, next: NextFunction) => {
@@ -97,6 +97,16 @@ app.use(
     next();
   },
   authRoutes
+);
+
+// Collab room routes
+app.use(
+  "/api/room",
+  (req: Request, res: Response, next: NextFunction) => {
+    (req as any).redisClient = redisClient;
+    next();
+  },
+  collabRoomRoutes
 );
 
 const PORT = process.env.PORT || 3000;

@@ -78,7 +78,33 @@ export const newPasswordValidation = Joi.object({
 
   password: Joi.string().min(8).required().messages({
     "string.min": "Password must be at least 8 characters",
-    "string.empty": "Password is required",
+    "string.empty": "Password is Company name",
     "any.required": "Password is required",
   }),
 }).required();
+export const collabRoomValidation = Joi.object({
+  companyName: Joi.string().required().messages({
+    "string.base": "Company name must be a string",
+    "string.empty": "Company name is required",
+  }),
+
+  userName: Joi.string().min(3).required().messages({
+    "string.min": "User name must be at least 3 characters",
+    "string.empty": "User name is required",
+  }),
+  userId: Joi.number().required().messages({
+    "number.base": "User ID must be a number",
+    "number.empty": "User ID is required",
+  }),
+  teamMembers: Joi.array()
+    .items(
+      Joi.string().email().messages({
+        "string.email": "Each team member must be a valid email",
+        "string.empty": "Email cannot be empty",
+      })
+    )
+    .optional()
+    .messages({
+      "array.base": "Team members must be an array",
+    }),
+});
