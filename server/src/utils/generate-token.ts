@@ -3,6 +3,7 @@ import crypto from "crypto";
 
 export const generateAccessToken = (user: {
   id: number;
+  name: string;
   email: string;
   role: string;
 }) => {

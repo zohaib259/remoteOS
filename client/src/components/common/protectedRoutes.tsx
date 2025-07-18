@@ -7,7 +7,6 @@ interface ProtectedRoutesProps {
 }
 
 const ProtectedRoutes = ({ user, children }: ProtectedRoutesProps) => {
-  console.log(user, "protected routes");
 
   if (
     user === null &&

@@ -1,0 +1,229 @@
+"use client";
+
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useForm } from "react-hook-form";
+import { useState } from "react";
+import { useSelector } from "react-redux";
+import type { AppDispatch, RootState } from "@/store/store";
+import { X, Plus, Building2, Users, Mail } from "lucide-react";
+import { useDispatch } from "react-redux";
+import { createCollabRoom } from "@/store/collabRoom/collabRoom";
+import toast from "react-hot-toast";
+
+export function CreateCollabRoom() {
+  const dispatch = useDispatch<AppDispatch>();
+  const { user } = useSelector((state: RootState) => state.auth);
+  const { register, handleSubmit, reset } = useForm({
+    defaultValues: {
+      companyName: "",
+      userName: user.name || "",
+    },
+  });
+
+  const [emails, setEmails] = useState<string[]>([]);
+  const [emailInput, setEmailInput] = useState("");
+  const [isOpen, setIsOpen] = useState(false);
+
+  const onSubmit = async (data: any) => {
+    const payload = {
+      companyName: data.companyName,
+      userName: data.userName,
+      userId: user.id,
+      teamMembers: emails,
+    };
+
+    const response = await dispatch(createCollabRoom(payload));
+    if (typeof response.payload === "object" && response?.payload?.success) {
+      toast.success(response?.payload?.message);
+      // navigate("/login");
+    } else {
+      if (typeof response.payload === "object") {
+        toast.error(response?.payload?.message);
+      }
+    }
+
+    reset();
+    setEmails([]);
+    setEmailInput("");
+    setIsOpen(false);
+  };
+
+  const handleAddEmail = () => {
+    const email = emailInput.trim();
+    if (email && !emails.includes(email) && isValidEmail(email)) {
+      setEmails([...emails, email]);
+      setEmailInput("");
+    }
+  };
+
+  const isValidEmail = (email: string) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  };
+
+  const handleRemoveEmail = (email: string) => {
+    setEmails(emails.filter((e) => e !== email));
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleAddEmail();
+    }
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
+        <button className="border border-gray-600  bg-custom-950 hover:bg-custom-900 cursor-pointer text-white px-8 py-3 rounded-xl">
+          Get Started
+        </button>
+      </DialogTrigger>
+
+      <DialogContent className="sm:max-w-[600px] rounded-3xl shadow-2xl p-0 border-0 bg-gradient-to-br from-white to-gray-50">
+        <div className="p-10    space-y-8">
+          <DialogHeader className="text-center space-y-3">
+            <DialogTitle className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+              Create Your Company
+            </DialogTitle>
+            <DialogDescription className="text-gray-600 text-lg">
+              Set up your workspace and invite your team to collaborate
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            {/* Company Name */}
+            <div className="space-y-3">
+              <Label
+                htmlFor="companyName"
+                className="text-sm font-semibold text-gray-700 flex items-center gap-2"
+              >
+                <Building2 size={16} />
+                Company Name
+              </Label>
+              <Input
+                id="companyName"
+                {...register("companyName", { required: true })}
+                placeholder="Enter your company name"
+                className="rounded-xl h-12 border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-200 text-lg"
+              />
+            </div>
+
+            {/* Your Name */}
+            <div className="space-y-3">
+              <Label
+                htmlFor="userName"
+                className="text-sm font-semibold text-gray-700 flex items-center gap-2"
+              >
+                <Users size={16} />
+                Your Name
+              </Label>
+              <Input
+                id="userName"
+                {...register("userName", { required: true })}
+                placeholder="Enter your name"
+                className="rounded-xl h-12 border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-200 text-lg"
+              />
+            </div>
+
+            {/* Team Members */}
+            <div className="space-y-3">
+              <Label
+                htmlFor="email"
+                className="text-sm font-semibold text-gray-700 flex items-center gap-2"
+              >
+                <Mail size={16} />
+                Invite Team Members
+                <span className="text-gray-400 font-normal ml-1">
+                  (optional)
+                </span>
+              </Label>
+
+              <div className="flex gap-3">
+                <Input
+                  id="email"
+                  type="email"
+                  value={emailInput}
+                  onChange={(e) => setEmailInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Enter email address"
+                  className="rounded-xl h-12 border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-200 text-lg flex-1"
+                />
+                <Button
+                  type="button"
+                  onClick={handleAddEmail}
+                  className="rounded-xl h-12 px-6  bg-custom-900 hover:bg-custom-800 cursor-pointer text-white font-semibold "
+                  disabled={
+                    !emailInput.trim() || !isValidEmail(emailInput.trim())
+                  }
+                >
+                  <Plus size={20} />
+                </Button>
+              </div>
+
+              {/* Email Tags */}
+              {emails.length > 0 && (
+                <div className="space-y-3">
+                  <div className="flex flex-wrap gap-2">
+                    {emails.map((email) => (
+                      <span
+                        key={email}
+                        className="bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-custom-800 text-gray-600 px-4 py-2 rounded-xl flex items-center gap-2 font-medium transition-all duration-200 hover:shadow-md"
+                      >
+                        <Mail size={14} />
+                        {email}
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveEmail(email)}
+                          className="text-custom-900 cursor-pointer hover:text-red-400 transition-colors duration-200 hover:bg-white rounded-full p-1"
+                          aria-label={`Remove ${email}`}
+                        >
+                          <X size={14} />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                  <p className="text-sm text-gray-500 flex items-center gap-1">
+                    <Users size={14} />
+                    {emails.length} team member{emails.length > 1 ? "s" : ""}{" "}
+                    invited
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <DialogFooter className="pt-6 flex-col sm:flex-row gap-3">
+              <DialogClose asChild>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="rounded-xl h-12 px-8 border-2 border-gray-200 cursor-pointer hover:bg-gray-100 font-semibold transition-all duration-200 w-full sm:w-auto"
+                >
+                  Cancel
+                </Button>
+              </DialogClose>
+              <Button
+                type="submit"
+                className="rounded-xl h-12 px-8 bg-custom-900 hover:bg-custom-800 cursor-pointer text-white font-semibold  w-full sm:w-auto shadow-lg"
+              >
+                Create Company
+              </Button>
+            </DialogFooter>
+          </form>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}

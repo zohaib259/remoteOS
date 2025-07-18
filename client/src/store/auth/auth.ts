@@ -29,7 +29,7 @@ const initialState: AuthState = {
 
 // Register thunk
 export const registerUser = createAsyncThunk<
-  { success: boolean; message: string },
+  { success: boolean; message: string }, // return type
   { name: string; email: string; password: string }, // Arg type
   { rejectValue: string }
 >("/auth/register", async (formData, { rejectWithValue }) => {

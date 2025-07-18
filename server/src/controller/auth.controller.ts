@@ -248,6 +248,7 @@ export const login = async (req: Request, res: Response) => {
     // Access Token
     const accessToken = generateAccessToken({
       id: existUser.id,
+      name: existUser.name,
       email: existUser.email,
       role: existUser.role,
     });
@@ -343,6 +344,7 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
     const accessToken = generateAccessToken({
       id: refreshToken.user.id,
       email: refreshToken.user.email,
+      name: refreshToken.user.name,
       role: refreshToken.user.role,
     });
 
@@ -551,6 +553,7 @@ export const googleLogin = async (req: Request, res: Response) => {
       const accessToken = generateAccessToken({
         id: existUser.id,
         email: existUser.email,
+        name: existUser.name,
         role: existUser.role,
       });
 
@@ -603,6 +606,7 @@ export const googleLogin = async (req: Request, res: Response) => {
     const accessToken = generateAccessToken({
       id: newUser.id,
       email: newUser.email,
+      name: newUser.name,
       role: newUser.role,
     });
 

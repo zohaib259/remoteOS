@@ -1,3 +1,5 @@
+import { CreateCollabRoom } from "@/components/common/createCollabRoom";
+
 const GetStarted = () => {
   return (
     <div className="min-h-screen bg-watercourse-950  flex items-center justify-center px-4">
@@ -9,9 +11,7 @@ const GetStarted = () => {
           Manage tasks, communicate easily, and stay productive together.
         </p>
         <div className="flex justify-center gap-4 flex-wrap">
-          <button className="bg-white cursor-pointer text-gray-900 px-6 py-3 rounded-xl shadow hover:bg-gray-200 transition">
-            Get Started
-          </button>
+          <CreateCollabRoom />
           <button className="border border-gray-600 cursor-pointer text-white px-6 py-3 rounded-xl hover:bg-watercourse-900 transition">
             Join Your Team
           </button>
