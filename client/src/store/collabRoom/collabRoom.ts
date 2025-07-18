@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import axios from "axios";
+import authApi from "../../utils/axiosIntercepter";
 
 interface roomStates {
   isLoading: boolean | null;
@@ -23,11 +23,7 @@ export const createCollabRoom = createAsyncThunk<
   { rejectValue: string }
 >("/room/create", async (formData, { rejectWithValue }) => {
   try {
-    const response = await axios.post(
-      "http://localhost:3000/api/room/create",
-      formData,
-      { withCredentials: true }
-    );
+    const response = await authApi.post("/room/create", formData);
     return response?.data;
   } catch (error: any) {
     return rejectWithValue(
@@ -44,13 +40,14 @@ const collabRoomSlice = createSlice({
     builder
       // Create collab room
       .addCase(createCollabRoom.pending, (state) => {
-        state.isLoading = false;
-      })
-      .addCase(createCollabRoom.fulfilled, (state) => {
         state.isLoading = true;
       })
-      .addCase(createCollabRoom.rejected, (state) => {
+      .addCase(createCollabRoom.fulfilled, (state) => {
         state.isLoading = false;
+      })
+      .addCase(createCollabRoom.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload || "Creating collab room failed";
       });
   },
 });

@@ -1,6 +1,7 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import axios from "axios";
+import authApi from "../../utils/axiosIntercepter"; // Import the custom axios instance with interceptors
 
 // User type
 interface User {
@@ -34,10 +35,9 @@ export const registerUser = createAsyncThunk<
   { rejectValue: string }
 >("/auth/register", async (formData, { rejectWithValue }) => {
   try {
-    const response = await axios.post(
-      "http://localhost:3000/api/auth/register",
-      formData,
-      { withCredentials: true }
+    const response = await authApi.post(
+      "/auth/register",
+      formData
     );
     return response.data;
   } catch (error: any) {
@@ -54,10 +54,9 @@ export const verifyOtp = createAsyncThunk<
   { rejectValue: string }
 >("/auth/verify-otp", async (formData, { rejectWithValue }) => {
   try {
-    const response = await axios.post(
-      "http://localhost:3000/api/auth/verify-otp",
-      formData,
-      { withCredentials: true }
+    const response = await authApi.post(
+      "/auth/verify-otp",
+      formData
     );
     return response.data;
   } catch (error: any) {
@@ -80,10 +79,9 @@ export const resendOtp = createAsyncThunk<
   { rejectValue: string }
 >("verify-otp/resend", async (formData, { rejectWithValue }) => {
   try {
-    const response = await axios.post(
-      "http://localhost:3000/api/auth/verify-otp/resend",
-      formData,
-      { withCredentials: true }
+    const response = await authApi.post(
+      "/auth/verify-otp/resend",
+      formData
     );
     return response.data;
   } catch (error: any) {
@@ -100,10 +98,9 @@ export const login = createAsyncThunk<
   { rejectValue: string }
 >("/auth/login", async (formData, { rejectWithValue }) => {
   try {
-    const response = await axios.post(
-      "http://localhost:3000/api/auth/login",
-      formData,
-      { withCredentials: true }
+    const response = await authApi.post(
+      "/auth/login",
+      formData
     );
     return response.data;
   } catch (error: any) {
@@ -127,10 +124,9 @@ export const forgotPassword = createAsyncThunk<
   }
 >("/auth/send-reset-pass-token", async (formData, { rejectWithValue }) => {
   try {
-    const response = await axios.post(
-      "http://localhost:3000/api/auth/send-reset-pass-token",
-      formData,
-      { withCredentials: true }
+    const response = await authApi.post(
+      "/auth/send-reset-pass-token",
+      formData
     );
     return response.data;
   } catch (error: any) {
@@ -156,10 +152,9 @@ export const newPassword = createAsyncThunk<
   }
 >("/auth/new-password", async (formData, { rejectWithValue }) => {
   try {
-    const response = await axios.post(
-      "http://localhost:3000/api/auth/new-password",
-      formData,
-      { withCredentials: true }
+    const response = await authApi.post(
+      "/auth/new-password",
+      formData
     );
     return response.data;
   } catch (error: any) {
@@ -179,10 +174,9 @@ export const LoginWithgoogle = createAsyncThunk<
   { rejectValue: string }
 >("/auth/google", async (formData, { rejectWithValue }) => {
   try {
-    const response = await axios.post(
-      "http://localhost:3000/api/auth/google-login",
-      formData,
-      { withCredentials: true }
+    const response = await authApi.post(
+      "/auth/google-login",
+      formData
     );
 
     return response.data;
@@ -201,30 +195,21 @@ export const checkAuth = createAsyncThunk<
   { rejectValue: string }
 >("/auth/check-auth", async (_, { rejectWithValue }) => {
   try {
-    const response = await axios.get(
-      "http://localhost:3000/api/auth/check-auth",
-      {
-        withCredentials: true,
-      }
+    const response = await authApi.get(
+      "/auth/check-auth"
     );
 
     return response.data;
   } catch (error: any) {
     if (error.response?.status === 401) {
       try {
-        const refreshRes = await axios.get(
-          "http://localhost:3000/api/auth/refresh-token",
-          {
-            withCredentials: true,
-          }
+        const refreshRes = await authApi.get(
+          "/auth/refresh-token"
         );
 
         if (refreshRes.status === 201) {
-          const retryRes = await axios.get(
-            "http://localhost:3000/api/auth/check-auth",
-            {
-              withCredentials: true,
-            }
+          const retryRes = await authApi.get(
+            "/auth/check-auth"
           );
 
           return retryRes.data;

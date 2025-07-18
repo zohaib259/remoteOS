@@ -16,9 +16,11 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { login } from "@/store/auth/auth";
 import { useDispatch } from "react-redux";
-import type { AppDispatch } from "@/store/store";
+import type { AppDispatch, RootState } from "@/store/store";
 import toast from "react-hot-toast";
 import GoogleAuth from "@/components/common/googleAuth";
+import { useSelector } from "react-redux";
+import { ClipLoader } from "react-spinners"; // Added for loading button
 
 type LoginFormData = {
   email: string;
@@ -27,6 +29,7 @@ type LoginFormData = {
 
 export function Login() {
   const dispatch = useDispatch<AppDispatch>();
+  const { isLoading } = useSelector((state: RootState) => state.auth);
 
   const {
     register,
@@ -136,9 +139,14 @@ export function Login() {
             <div className="mt-6">
               <Button
                 type="submit"
+                disabled={isLoading}
                 className="w-full bg-custom-950 hover:bg-custom-900 cursor-pointer"
               >
-                Login
+                {isLoading ? (
+                  <ClipLoader color="#2563eb" loading={true} size={20} />
+                ) : (
+                  "Login"
+                )}
               </Button>
             </div>
           </form>

@@ -13,6 +13,7 @@ import { useSelector } from "react-redux";
 import { HashLoader } from "react-spinners";
 import ProtectedRoutes from "./components/common/protectedRoutes";
 import GetStarted from "./pages/get-started/getStarted";
+import NotFoundPage from "./pages/404/404";
 
 function App() {
   const dispatch = useDispatch<AppDispatch>();
@@ -61,6 +62,8 @@ function App() {
               </ProtectedRoutes>
             }
           />
+
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Router>
     </div>
