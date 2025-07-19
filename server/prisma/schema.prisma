@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -24,8 +18,10 @@ model User {
   profilePicture  String?  
   refreshToken RefreshToken[] 
   collabRoom CollabRoom[]
+  channelAdmin ChannelAdmin[]
+  channelTeamMember ChannelTeamMember[]
   verified  Boolean  @default(false)
-  collabRoomsAsMember CollabRoom[] @relation("TeamMembers")
+  collabRoomTeamMember CollabRoomTeamMember[]
   createdAt DateTime @default(now())
 }
 
@@ -42,9 +38,59 @@ model CollabRoom {
   id       Int     @id @default(autoincrement())
   companyName String
   adminName  String
-  teamMembers User[] @relation("TeamMembers")
   adminId    Int
-  user      User     @relation(fields: [adminId], references: [id])
+  admin      User     @relation(fields: [adminId], references: [id])
+  collabRoomTeamMember CollabRoomTeamMember[]
+  channel Channel[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+
+model CollabRoomTeamMember{
+  id       Int     @id @default(autoincrement())
+  roomId Int 
+  room  CollabRoom @relation(fields :[roomId], references:[id])
+  role String?
+  userId Int
+  user User @relation(fields : [userId] , references:[id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@unique([userId, roomId])
+} 
+
+model Channel {
+  id            Int       @id @default(autoincrement())
+  name          String
+  isPublic      Boolean   @default(false)
+  collabRoomId  Int
+  collabRoom    CollabRoom @relation(fields: [collabRoomId], references: [id])
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  channelAdmins        ChannelAdmin[]
+  channelTeamMembers   ChannelTeamMember[]
+}
+
+model ChannelAdmin {
+  id        Int     @id @default(autoincrement())
+  channelId Int
+  channel   Channel @relation(fields: [channelId], references: [id])
+  userId    Int
+  user      User    @relation(fields: [userId], references: [id])
+
+  @@unique([channelId, userId])
+}
+
+model ChannelTeamMember {
+  id        Int     @id @default(autoincrement())
+  channelId Int
+  channel   Channel @relation(fields: [channelId], references: [id])
+  userId    Int
+  user      User    @relation(fields: [userId], references: [id])
+
+  @@unique([channelId, userId])
+}
+

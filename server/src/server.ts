@@ -37,7 +37,7 @@ app.use(cookieParser());
 const redisClient = new Redis(process.env.REDIS_URL || "");
 
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
+  windowMs: 15 * 60 * 100,
   max: 1000,
   handler: (req, res) => {
     logger.warn(`Sensitive endpoints rate limit exceeded for IP: ${req.ip}`);

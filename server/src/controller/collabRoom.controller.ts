@@ -4,6 +4,7 @@ import { collabRoomValidation } from "../utils/validation";
 import prisma from "../utils/prisma";
 import crypto from "crypto";
 import { sendEmail } from "../utils/email";
+import { connect } from "http2";
 
 export const createCollabRoom = async (req: Request, res: Response) => {
   logger.info(`Create collabRoom end point hit`);
@@ -37,7 +38,7 @@ export const createCollabRoom = async (req: Request, res: Response) => {
 
     // Transaction logic starts here
     await prisma.$transaction(async (tx) => {
-      const newCollabRooms = await tx.collabRoom.create({
+      const newCollabRoom = await tx.collabRoom.create({
         data: {
           companyName,
           adminName: userName,
@@ -66,14 +67,61 @@ export const createCollabRoom = async (req: Request, res: Response) => {
 
         const toConnect = Array.from(existingIds).map((id) => ({ id }));
 
-        await tx.collabRoom.update({
-          where: { id: newCollabRooms.id },
+        await Promise.all(
+          Array.from(toConnect).map((userId) =>
+            tx.collabRoomTeamMember.create({
+              data: {
+                user: { connect: { id: userId.id } },
+                room: { connect: { id: newCollabRoom.id } },
+              },
+            })
+          )
+        );
+
+        // create all and social channels automatically
+        const newChannel = await tx.channel.create({
           data: {
-            teamMembers: {
-              connect: toConnect,
+            name: `all ${newCollabRoom.companyName}`,
+            isPublic: true,
+            collabRoom: {
+              connect: {
+                id: newCollabRoom.id,
+              },
             },
           },
         });
+        const newChannelAdmin = await tx.channelAdmin.create({
+          data: {
+            channel: {
+              connect: {
+                id: newChannel.id,
+              },
+            },
+            user: {
+              connect: {
+                id: userId,
+              },
+            },
+          },
+        });
+        await Promise.all(
+          Array.from(toConnect).map((userId) =>
+            tx.channelTeamMember.create({
+              data: {
+                channel: {
+                  connect: {
+                    id: newChannel.id,
+                  },
+                },
+                user: {
+                  connect: {
+                    id: userId.id,
+                  },
+                },
+              },
+            })
+          )
+        );
 
         // Send invites (outside Prisma tx)
         for (const email of toInvite) {
@@ -83,7 +131,7 @@ export const createCollabRoom = async (req: Request, res: Response) => {
             token,
             JSON.stringify({
               email,
-              roomId: newCollabRooms.id,
+              roomId: newCollabRoom.id,
               token,
             }),
             "EX",
