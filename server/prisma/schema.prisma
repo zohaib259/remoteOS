@@ -52,7 +52,7 @@ model CollabRoomTeamMember{
   id       Int     @id @default(autoincrement())
   roomId Int 
   room  CollabRoom @relation(fields :[roomId], references:[id])
-  role String?
+  profession String?
   userId Int
   user User @relation(fields : [userId] , references:[id])
   createdAt DateTime @default(now())

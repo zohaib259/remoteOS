@@ -1,5 +1,8 @@
 import express from "express";
-import { createCollabRoom } from "../controller/collabRoom.controller";
+import {
+  createCollabRoom,
+  getCollabRoomsWithChannelsByUserId,
+} from "../controller/collabRoom.controller";
 import logger from "../utils/logger";
 import { authMiddleware } from "../middlewares/authMiddleware";
 
@@ -11,5 +14,16 @@ router.post("/create", authMiddleware, (req, res) => {
     res.status(500).send("Internal Server Error");
   });
 });
+
+router.get(
+  "/get/:userId",
+  // authMiddleware,
+  (req, res) => {
+    getCollabRoomsWithChannelsByUserId(req, res).catch((err) => {
+      logger.error(err);
+      res.status(500).send("Internal Server Error");
+    });
+  }
+);
 
 export default router;
