@@ -167,79 +167,14 @@ interface TeamMemberData {
   joinedAt: Date;
 }
 
-interface ChannelTeamMemberData {
-  id: number;
-  name: string;
-  email: string;
-  profilePicture: string | null;
-  isAdmin: boolean;
-  joinedAt: Date;
-}
-
-interface AdminData {
-  id: number;
-  name: string;
-  email: string;
-  profilePicture: string | null;
-}
-
 // Get collab room with channels by userId ID
-interface TeamMemberData {
-  id: number;
-  name: string;
-  email: string;
-  profilePicture: string | null;
-  role: string;
-  joinedAt: Date;
-}
-
-interface ChannelTeamMemberData {
-  id: number;
-  name: string;
-  email: string;
-  profilePicture: string | null;
-  isAdmin: boolean;
-  joinedAt: Date;
-}
-
-interface AdminData {
-  id: number;
-  name: string;
-  email: string;
-  profilePicture: string | null;
-}
-
-// interface CollabRoomWithChannels {
-//   id: number;
-//   companyName: string;
-//   adminName: string;
-//   adminId: number;
-//   admin: AdminData; // Admin details
-//   createdAt: Date;
-//   updatedAt: Date;
-//   userRole: string | null; // Role in this collab room
-//   teamMembers: TeamMemberData[]; // All team members in collab room
-//   channels: {
-//     channelId: number;
-//     channelName: string;
-//     isPublic: boolean;
-//     createdAt: Date;
-//     updatedAt: Date;
-//     isAdmin: boolean; // Whether user is admin of this channel
-//     isMember: boolean; // Whether user is member of this channel
-//     channelAdmins: AdminData[]; // Channel admins
-//     teamMembers: ChannelTeamMemberData[]; // Channel team members
-//   }[];
-// }
-
 export const getCollabRoomsWithChannelsByUserId = async (
   req: Request,
   res: Response
 ) => {
   try {
-    const userId = parseInt(req.params.userId);
-
-    console.log(req?.user);
+    // const userId = 1;
+    const userId = req?.user.id;
 
     if (!userId || isNaN(userId)) {
       return res.status(400).json({
@@ -263,14 +198,14 @@ export const getCollabRoomsWithChannelsByUserId = async (
     const collabRoom = await prisma.collabRoom.findMany({
       where: {
         OR: [
-          { adminId: userId }, 
+          { adminId: userId },
           {
             collabRoomTeamMember: {
               some: {
                 userId: userId,
               },
             },
-          }, 
+          },
         ],
       },
       include: {
@@ -327,6 +262,11 @@ export const getCollabRoomsWithChannelsByUserId = async (
         createdAt: "desc",
       },
     });
+
+    if (collabRoom.length === 0) {
+      logger.info("No collab room found");
+      return { success: false, message: "No collab room found" };
+    }
 
     const collabRoomDataArray = collabRoom.map((room) => {
       const isAdmin = userId === room.admin?.id;

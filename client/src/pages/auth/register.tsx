@@ -14,13 +14,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useForm } from "react-hook-form";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import { FcGoogle } from "react-icons/fc";
 import { registerUser } from "@/store/auth/auth";
 import { useDispatch } from "react-redux";
 import type { AppDispatch, RootState } from "@/store/store";
 import toast from "react-hot-toast";
 import { useSelector } from "react-redux";
 import { ClipLoader } from "react-spinners";
+import GoogleAuth from "../../components/common/googleAuth";
 
 type formData = {
   name: string;
@@ -187,14 +187,7 @@ export function Register() {
           </form>
         </CardContent>
         <CardFooter className="flex-col gap-2">
-          <Button
-            disabled={isLoading}
-            variant="outline"
-            className="w-full flex items-center gap-2 justify-center cursor-pointer text-gray-800"
-          >
-            <FcGoogle  size={20} />
-            Register with Google
-          </Button>
+          <GoogleAuth />
         </CardFooter>
       </Card>
     </main>

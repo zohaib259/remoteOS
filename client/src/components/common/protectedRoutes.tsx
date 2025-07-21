@@ -3,11 +3,15 @@ import { Navigate } from "react-router-dom";
 
 interface ProtectedRoutesProps {
   children: ReactNode;
-  user: object;
+  user?: object;
+  roomData?: object;
 }
 
-const ProtectedRoutes = ({ user, children }: ProtectedRoutesProps) => {
-
+const ProtectedRoutes = ({
+  user,
+  children,
+  roomData,
+}: ProtectedRoutesProps) => {
   if (
     user === null &&
     !(
@@ -17,6 +21,15 @@ const ProtectedRoutes = ({ user, children }: ProtectedRoutesProps) => {
   ) {
     return <Navigate to={"/login"} />;
   }
+
+  if (
+    user === null ||
+    ((!roomData || roomData === null) &&
+      location.pathname.includes("/collab-room"))
+  ) {
+    return <Navigate to={"/get-started"} />;
+  }
+
   return children;
 };
 

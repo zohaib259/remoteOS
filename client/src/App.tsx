@@ -1,4 +1,9 @@
-import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
+import {
+  Route,
+  BrowserRouter as Router,
+  Routes,
+  useNavigate,
+} from "react-router-dom";
 import { Register } from "./pages/auth/register";
 import { Login } from "./pages/auth/login";
 import { Toaster } from "react-hot-toast";
@@ -14,20 +19,44 @@ import { HashLoader } from "react-spinners";
 import ProtectedRoutes from "./components/common/protectedRoutes";
 import GetStarted from "./pages/get-started/getStarted";
 import NotFoundPage from "./pages/404/404";
+import CollabRoom from "./pages/collab-Room/collabRoom";
+import { getCollabRomm } from "./store/collabRoom/collabRoom";
 
 function App() {
   const dispatch = useDispatch<AppDispatch>();
+  const navigate = useNavigate();
   const { isCheckingAuth, user } = useSelector(
     (state: RootState) => state.auth
   );
+  const { roomData, isFetchingRoom } = useSelector(
+    (state: RootState) => state.collaRoom
+  );
 
   useEffect(() => {
-    dispatch(checkAuth());
+    dispatch(checkAuth()).then(() => {
+      dispatch(getCollabRomm()).then((reposnse) => {
+        if (
+          typeof reposnse?.payload === "object" &&
+          reposnse?.payload?.success === true
+        ) {
+          console.log(reposnse?.payload);
+
+          navigate("/collab-room");
+        } else {
+          if (
+            typeof reposnse?.payload === "object" &&
+            reposnse?.payload?.success === true
+          ) {
+            navigate("/get-started");
+          }
+        }
+      });
+    });
   }, []);
 
-  if (isCheckingAuth) {
+  if (isCheckingAuth || isFetchingRoom) {
     return (
-      <div className="w-screen h-screen flex justify-center items-center">
+      <div className="w-full min-h-screen flex justify-center items-center">
         <HashLoader size={40} color={"#065b56"} />
       </div>
     );
@@ -46,26 +75,33 @@ function App() {
           },
         }}
       />
-      <Router>
-        <Routes>
-          <Route path="/register" element={<Register />} />
-          <Route path="/verify-otp" element={<VerifyOtp />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/new-password" element={<ResetPasswordPage />} />
 
-          <Route
-            path="/get-started"
-            element={
-              <ProtectedRoutes user={user}>
-                <GetStarted />
-              </ProtectedRoutes>
-            }
-          />
+      <Routes>
+        <Route path="/register" element={<Register />} />
+        <Route path="/verify-otp" element={<VerifyOtp />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/new-password" element={<ResetPasswordPage />} />
 
-          <Route path="*" element={<NotFoundPage />} />
-        </Routes>
-      </Router>
+        <Route
+          path="/get-started"
+          element={
+            <ProtectedRoutes user={user}>
+              <GetStarted />
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path="/collab-room"
+          element={
+            <ProtectedRoutes user={user} roomData={roomData}>
+              <CollabRoom />
+            </ProtectedRoutes>
+          }
+        />
+
+        <Route path="*" element={<NotFoundPage />} />
+      </Routes>
     </div>
   );
 }

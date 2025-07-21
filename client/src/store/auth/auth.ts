@@ -35,10 +35,7 @@ export const registerUser = createAsyncThunk<
   { rejectValue: string }
 >("/auth/register", async (formData, { rejectWithValue }) => {
   try {
-    const response = await authApi.post(
-      "/auth/register",
-      formData
-    );
+    const response = await authApi.post("/auth/register", formData);
     return response.data;
   } catch (error: any) {
     return rejectWithValue(
@@ -54,10 +51,7 @@ export const verifyOtp = createAsyncThunk<
   { rejectValue: string }
 >("/auth/verify-otp", async (formData, { rejectWithValue }) => {
   try {
-    const response = await authApi.post(
-      "/auth/verify-otp",
-      formData
-    );
+    const response = await authApi.post("/auth/verify-otp", formData);
     return response.data;
   } catch (error: any) {
     return rejectWithValue(
@@ -79,10 +73,7 @@ export const resendOtp = createAsyncThunk<
   { rejectValue: string }
 >("verify-otp/resend", async (formData, { rejectWithValue }) => {
   try {
-    const response = await authApi.post(
-      "/auth/verify-otp/resend",
-      formData
-    );
+    const response = await authApi.post("/auth/verify-otp/resend", formData);
     return response.data;
   } catch (error: any) {
     return rejectWithValue(
@@ -98,10 +89,7 @@ export const login = createAsyncThunk<
   { rejectValue: string }
 >("/auth/login", async (formData, { rejectWithValue }) => {
   try {
-    const response = await authApi.post(
-      "/auth/login",
-      formData
-    );
+    const response = await authApi.post("/auth/login", formData);
     return response.data;
   } catch (error: any) {
     return rejectWithValue(
@@ -152,10 +140,7 @@ export const newPassword = createAsyncThunk<
   }
 >("/auth/new-password", async (formData, { rejectWithValue }) => {
   try {
-    const response = await authApi.post(
-      "/auth/new-password",
-      formData
-    );
+    const response = await authApi.post("/auth/new-password", formData);
     return response.data;
   } catch (error: any) {
     return rejectWithValue(
@@ -169,15 +154,13 @@ export const LoginWithgoogle = createAsyncThunk<
   {
     success: boolean;
     message: string;
+    user: object;
   },
   { code: string },
   { rejectValue: string }
 >("/auth/google", async (formData, { rejectWithValue }) => {
   try {
-    const response = await authApi.post(
-      "/auth/google-login",
-      formData
-    );
+    const response = await authApi.post("/auth/google-login", formData);
 
     return response.data;
   } catch (error: any) {
@@ -188,29 +171,22 @@ export const LoginWithgoogle = createAsyncThunk<
 });
 
 // check auth
-
 export const checkAuth = createAsyncThunk<
   { success: boolean; message: string; user: string },
   void,
   { rejectValue: string }
 >("/auth/check-auth", async (_, { rejectWithValue }) => {
   try {
-    const response = await authApi.get(
-      "/auth/check-auth"
-    );
+    const response = await authApi.get("/auth/check-auth");
 
     return response.data;
   } catch (error: any) {
     if (error.response?.status === 401) {
       try {
-        const refreshRes = await authApi.get(
-          "/auth/refresh-token"
-        );
+        const refreshRes = await authApi.get("/auth/refresh-token");
 
         if (refreshRes.status === 201) {
-          const retryRes = await authApi.get(
-            "/auth/check-auth"
-          );
+          const retryRes = await authApi.get("/auth/check-auth");
 
           return retryRes.data;
         }
@@ -280,7 +256,7 @@ const authSlice = createSlice({
           action.payload || "Failed to resend OTP. Please try again.";
       })
 
-      // verify otp
+      // login
       .addCase(login.pending, (state) => {
         state.isLoading = true;
         state.error = null;
@@ -295,7 +271,7 @@ const authSlice = createSlice({
           action.payload || "Invalid email or password. Please try again.";
       })
 
-      // verify otp
+      // forgot poassword
       .addCase(forgotPassword.pending, (state) => {
         state.isLoading = true;
         state.error = null;
@@ -327,8 +303,9 @@ const authSlice = createSlice({
         state.isLoading = true;
         state.error = null;
       })
-      .addCase(LoginWithgoogle.fulfilled, (state) => {
+      .addCase(LoginWithgoogle.fulfilled, (state, action) => {
         state.isLoading = false;
+        state.user = action?.payload?.user;
       })
       .addCase(LoginWithgoogle.rejected, (state, action) => {
         state.isLoading = false;

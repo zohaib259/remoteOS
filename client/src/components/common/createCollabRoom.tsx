@@ -9,7 +9,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,9 +20,11 @@ import { X, Plus, Building2, Users, Mail } from "lucide-react";
 import { useDispatch } from "react-redux";
 import { createCollabRoom } from "@/store/collabRoom/collabRoom";
 import toast from "react-hot-toast";
+import { useNavigate, Outlet } from "react-router-dom";
 
 export function CreateCollabRoom() {
   const dispatch = useDispatch<AppDispatch>();
+  const navigate = useNavigate();
   const { user } = useSelector((state: RootState) => state.auth);
   const { register, handleSubmit, reset } = useForm({
     defaultValues: {
@@ -34,7 +35,7 @@ export function CreateCollabRoom() {
 
   const [emails, setEmails] = useState<string[]>([]);
   const [emailInput, setEmailInput] = useState("");
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(true); // Open modal by default for routing
 
   const onSubmit = async (data: any) => {
     const payload = {
@@ -47,7 +48,7 @@ export function CreateCollabRoom() {
     const response = await dispatch(createCollabRoom(payload));
     if (typeof response.payload === "object" && response?.payload?.success) {
       toast.success(response?.payload?.message);
-      // navigate("/login");
+      navigate("/login");
     } else {
       if (typeof response.payload === "object") {
         toast.error(response?.payload?.message);
@@ -68,9 +69,8 @@ export function CreateCollabRoom() {
     }
   };
 
-  const isValidEmail = (email: string) => {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  };
+  const isValidEmail = (email: string) =>
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
   const handleRemoveEmail = (email: string) => {
     setEmails(emails.filter((e) => e !== email));
@@ -85,14 +85,8 @@ export function CreateCollabRoom() {
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <button className="border border-gray-600  bg-custom-950 hover:bg-custom-900 cursor-pointer text-white px-8 py-3 rounded-xl">
-          Get Started
-        </button>
-      </DialogTrigger>
-
       <DialogContent className="sm:max-w-[600px] rounded-3xl shadow-2xl p-0 border-0 bg-gradient-to-br from-white to-gray-50">
-        <div className="p-10    space-y-8">
+        <div className="p-10 space-y-8">
           <DialogHeader className="text-center space-y-3">
             <DialogTitle className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
               Create Your Company
@@ -107,16 +101,15 @@ export function CreateCollabRoom() {
             <div className="space-y-3">
               <Label
                 htmlFor="companyName"
-                className="text-sm font-semibold text-gray-700 flex items-center gap-2"
+                className="flex items-center gap-2 text-sm font-semibold text-gray-700"
               >
-                <Building2 size={16} />
-                Company Name
+                <Building2 size={16} /> Company Name
               </Label>
               <Input
                 id="companyName"
                 {...register("companyName", { required: true })}
                 placeholder="Enter your company name"
-                className="rounded-xl h-12 border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-200 text-lg"
+                className="rounded-xl h-12 border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 text-lg"
               />
             </div>
 
@@ -124,16 +117,15 @@ export function CreateCollabRoom() {
             <div className="space-y-3">
               <Label
                 htmlFor="userName"
-                className="text-sm font-semibold text-gray-700 flex items-center gap-2"
+                className="flex items-center gap-2 text-sm font-semibold text-gray-700"
               >
-                <Users size={16} />
-                Your Name
+                <Users size={16} /> Your Name
               </Label>
               <Input
                 id="userName"
                 {...register("userName", { required: true })}
                 placeholder="Enter your name"
-                className="rounded-xl h-12 border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-200 text-lg"
+                className="rounded-xl h-12 border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 text-lg"
               />
             </div>
 
@@ -141,11 +133,11 @@ export function CreateCollabRoom() {
             <div className="space-y-3">
               <Label
                 htmlFor="email"
-                className="text-sm font-semibold text-gray-700 flex items-center gap-2"
+                className="flex items-center gap-2 text-sm font-semibold text-gray-700"
               >
                 <Mail size={16} />
                 Invite Team Members
-                <span className="text-gray-400 font-normal ml-1">
+                <span className="ml-1 font-normal text-gray-400">
                   (optional)
                 </span>
               </Label>
@@ -158,35 +150,34 @@ export function CreateCollabRoom() {
                   onChange={(e) => setEmailInput(e.target.value)}
                   onKeyDown={handleKeyDown}
                   placeholder="Enter email address"
-                  className="rounded-xl h-12 border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-200 text-lg flex-1"
+                  className="flex-1 rounded-xl h-12 border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 text-lg"
                 />
                 <Button
                   type="button"
                   onClick={handleAddEmail}
-                  className="rounded-xl h-12 px-6  bg-custom-900 hover:bg-custom-800 cursor-pointer text-white font-semibold "
                   disabled={
                     !emailInput.trim() || !isValidEmail(emailInput.trim())
                   }
+                  className="rounded-xl h-12 px-6 bg-custom-900 hover:bg-custom-800 text-white font-semibold"
                 >
                   <Plus size={20} />
                 </Button>
               </div>
 
-              {/* Email Tags */}
               {emails.length > 0 && (
                 <div className="space-y-3">
                   <div className="flex flex-wrap gap-2">
                     {emails.map((email) => (
                       <span
                         key={email}
-                        className="bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-custom-800 text-gray-600 px-4 py-2 rounded-xl flex items-center gap-2 font-medium transition-all duration-200 hover:shadow-md"
+                        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-custom-800 text-gray-600 font-medium hover:shadow-md transition-all"
                       >
                         <Mail size={14} />
                         {email}
                         <button
                           type="button"
                           onClick={() => handleRemoveEmail(email)}
-                          className="text-custom-900 cursor-pointer hover:text-red-400 transition-colors duration-200 hover:bg-white rounded-full p-1"
+                          className="p-1 rounded-full text-custom-900 hover:text-red-400 hover:bg-white transition"
                           aria-label={`Remove ${email}`}
                         >
                           <X size={14} />
@@ -209,19 +200,24 @@ export function CreateCollabRoom() {
                 <Button
                   type="button"
                   variant="outline"
-                  className="rounded-xl h-12 px-8 border-2 border-gray-200 cursor-pointer hover:bg-gray-100 font-semibold transition-all duration-200 w-full sm:w-auto"
+                  className="w-full sm:w-auto rounded-xl h-12 px-8 border-2 border-gray-200 hover:bg-gray-100 font-semibold"
                 >
                   Cancel
                 </Button>
               </DialogClose>
               <Button
                 type="submit"
-                className="rounded-xl h-12 px-8 bg-custom-900 hover:bg-custom-800 cursor-pointer text-white font-semibold  w-full sm:w-auto shadow-lg"
+                className="w-full sm:w-auto rounded-xl h-12 px-8 bg-custom-900 hover:bg-custom-800 text-white font-semibold shadow-lg"
               >
                 Create Company
               </Button>
             </DialogFooter>
           </form>
+
+          {/* ⬇️ This is where nested children render */}
+          <div className="pt-6">
+            <Outlet />
+          </div>
         </div>
       </DialogContent>
     </Dialog>

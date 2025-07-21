@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useForm } from "react-hook-form";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useNavigation } from "react-router-dom";
 import { login } from "@/store/auth/auth";
 import { useDispatch } from "react-redux";
 import type { AppDispatch, RootState } from "@/store/store";
@@ -21,6 +21,7 @@ import toast from "react-hot-toast";
 import GoogleAuth from "@/components/common/googleAuth";
 import { useSelector } from "react-redux";
 import { ClipLoader } from "react-spinners"; // Added for loading button
+import { getCollabRomm } from "@/store/collabRoom/collabRoom";
 
 type LoginFormData = {
   email: string;
@@ -30,6 +31,7 @@ type LoginFormData = {
 export function Login() {
   const dispatch = useDispatch<AppDispatch>();
   const { isLoading } = useSelector((state: RootState) => state.auth);
+  const navigate = useNavigate();
 
   const {
     register,
@@ -48,7 +50,15 @@ export function Login() {
     const response = await dispatch(login(data));
     if (typeof response.payload === "object" && response?.payload?.success) {
       toast.success(response?.payload?.message);
-      // navigate("/login");
+      const roomResponse = await dispatch(getCollabRomm());
+      if (
+        typeof roomResponse.payload === "object" &&
+        roomResponse?.payload?.success
+      ) {
+        navigate("/collab-room");
+      } else {
+        navigate("/get-started");
+      }
     } else {
       if (typeof response.payload === "object") {
         toast.error(response?.payload?.message);

@@ -8,6 +8,7 @@ import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { ClipLoader } from "react-spinners";
+import { getCollabRomm } from "@/store/collabRoom/collabRoom";
 
 const GoogleAuth = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -21,8 +22,16 @@ const GoogleAuth = () => {
         LoginWithgoogle({ code: authResult.code })
       );
       if (typeof response.payload === "object" && response?.payload?.success) {
+        const roomResponse = await dispatch(getCollabRomm());
+        if (
+          typeof roomResponse.payload === "object" &&
+          roomResponse?.payload?.success
+        ) {
+          navigate("/collab-room");
+        } else {
+          navigate("/get-started");
+        }
         toast.success(response?.payload?.message);
-        navigate("/get-started");
       } else {
         if (typeof response.payload === "object") {
           toast.error(response?.payload?.message);
