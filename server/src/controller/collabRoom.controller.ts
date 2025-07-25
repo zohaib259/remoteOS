@@ -263,9 +263,11 @@ export const getCollabRoomsWithChannelsByUserId = async (
       },
     });
 
-    if (collabRoom.length === 0) {
+    if (!collabRoom || collabRoom.length === 0) {
       logger.info("No collab room found");
-      return { success: false, message: "No collab room found" };
+      return res
+        .status(404)
+        .json({ success: false, message: "No collab room found" });
     }
 
     const collabRoomDataArray = collabRoom.map((room) => {
@@ -285,6 +287,15 @@ export const getCollabRoomsWithChannelsByUserId = async (
               name: room.admin.name,
               email: room.admin.email,
               profilePicture: room.admin.profilePicture,
+            }
+          : null,
+
+        user: !isAdmin
+          ? {
+              id: user.id,
+              name: user.name,
+              email: user.email,
+              profilePicture: user.profilePicture,
             }
           : null,
 

@@ -14,47 +14,56 @@ import {
   Menu,
   X,
 } from "lucide-react";
+import type { RootState } from "@/store/store";
+import { useSelector } from "react-redux";
+import { Outlet, useNavigate } from "react-router-dom";
+import { RoomSidebar } from "@/components/collabRoom/roomSidebar";
 
 type NavItemType = {
   id: string;
   icon: React.ReactNode;
   label: string;
+  to: string;
 };
 
 const navItems: NavItemType[] = [
-  { id: "home", icon: <Home size={20} />, label: "Home" },
-  { id: "dms", icon: <MessageCircle size={20} />, label: "DMs" },
-  { id: "activity", icon: <Bell size={20} />, label: "Activity" },
-  { id: "canvases", icon: <FileText size={20} />, label: "Canvases" },
-  { id: "more", icon: <MoreHorizontal size={20} />, label: "More" },
+  {
+    id: "home",
+    icon: <Home size={20} />,
+    label: "Home",
+    to: "/collab-room/home",
+  },
+  {
+    id: "dms",
+    icon: <MessageCircle size={20} />,
+    label: "DMs",
+    to: "/collab-room/dms",
+  },
+  {
+    id: "activity",
+    icon: <Bell size={20} />,
+    label: "Activity",
+    to: "/collab-room/activity",
+  },
+  {
+    id: "canvases",
+    icon: <FileText size={20} />,
+    label: "Canvases",
+    to: "/collab-room/canvases",
+  },
+  {
+    id: "more",
+    icon: <MoreHorizontal size={20} />,
+    label: "More",
+    to: "/collab-room/more",
+  },
 ];
-
-const HomeContent = () => <div>🏠 Home Content (Messages or Dashboard)</div>;
-const DMsContent = () => <div>💬 Direct Messages</div>;
-const ActivityContent = () => <div>🔔 Activity Feed</div>;
-const CanvasesContent = () => <div>📝 Canvases & Documents</div>;
-const MoreContent = () => <div>⋯ More Options</div>;
-
-const renderContent = (active: string) => {
-  switch (active) {
-    case "home":
-      return <HomeContent />;
-    case "dms":
-      return <DMsContent />;
-    case "activity":
-      return <ActivityContent />;
-    case "canvases":
-      return <CanvasesContent />;
-    case "more":
-      return <MoreContent />;
-    default:
-      return <div>Not Found</div>;
-  }
-};
 
 const SidebarWithHeader = () => {
   const [active, setActive] = useState<string>("home");
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
+  const navigate = useNavigate();
+  const { roomData } = useSelector((state: RootState) => state.collaRoom);
 
   return (
     <div className="flex h-screen text-white">
@@ -64,15 +73,20 @@ const SidebarWithHeader = () => {
           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
         } md:translate-x-0 md:w-20`}
       >
-        <div className="flex flex-col items-center gap-6">
-          <div className="w-10 h-10 rounded-lg bg-gray-500 flex items-center justify-center text-sm font-bold">
-            ZS
+        <div className="flex flex-col items-center gap-2">
+          <div className="w-12 h-12 mb-5 rounded-lg bg-gray-500 flex items-center justify-center text-sm font-bold">
+            {`${roomData[0]?.companyName
+              .charAt(0)
+              .toUpperCase()}${roomData[0]?.companyName
+              .charAt(roomData[0].companyName.length - 1)
+              .toUpperCase()}`}
           </div>
 
           {navItems.map((item) => (
             <button
               key={item.id}
               onClick={() => {
+                navigate(item.to);
                 setActive(item.id);
                 setIsSidebarOpen(false);
               }}
@@ -95,8 +109,12 @@ const SidebarWithHeader = () => {
             <Plus size={20} />
           </button>
           <img
-            src="https://i.pravatar.cc/40?img=12"
-            alt="User"
+            src={
+              roomData[0]?.admin === null
+                ? roomData[0]?.user?.profilePicture
+                : roomData[0]?.admin?.profilePicture
+            }
+            alt="User image"
             className="w-10 h-10 rounded-full border-2 border-green-500"
           />
         </div>
@@ -151,8 +169,10 @@ const SidebarWithHeader = () => {
         </header>
 
         {/* Content Rendered Based on Active State */}
-        <main className="flex-1 p-4 overflow-y-auto">
-          {renderContent(active)}
+        <main className="flex-1  overflow-y-auto">
+          <div>
+            <RoomSidebar type={active} channels={roomData[0]?.channel} />
+          </div>
         </main>
       </div>
     </div>

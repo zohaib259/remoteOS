@@ -1,4 +1,5 @@
 import {
+  Outlet,
   Route,
   BrowserRouter as Router,
   Routes,
@@ -39,8 +40,6 @@ function App() {
           typeof reposnse?.payload === "object" &&
           reposnse?.payload?.success === true
         ) {
-          console.log(reposnse?.payload);
-
           navigate("/collab-room");
         } else {
           if (
@@ -91,6 +90,7 @@ function App() {
             </ProtectedRoutes>
           }
         />
+        {/* Nest RoomHome inside CollabRoom using Outlet */}
         <Route
           path="/collab-room"
           element={
@@ -98,7 +98,7 @@ function App() {
               <CollabRoom />
             </ProtectedRoutes>
           }
-        />
+        ></Route>
 
         <Route path="*" element={<NotFoundPage />} />
       </Routes>

@@ -315,9 +315,10 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
 
     const token = req.cookies.refreshToken;
     if (!token) {
+      logger.warn(`No token provided`);
       return res
         .status(401)
-        .send({ success: false, message: "No token provided" });
+        .json({ success: false, message: "No token provided" });
     }
 
     const hashedRefreshToken = crypto
@@ -331,14 +332,14 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
     });
 
     if (!refreshToken) {
-      logger.error("Refresh token not found");
-      return res.status(404).send({ success: false, message: "Invalid token" });
+      logger.error("Refresh token not found in DB");
+      return res.status(404).json({ success: false, message: "Invalid token" });
     }
 
     if (refreshToken.expiresAt < new Date()) {
       return res
         .status(401)
-        .send({ success: false, message: "Token has expired" });
+        .json({ success: false, message: "Token has expired" });
     }
 
     const accessToken = generateAccessToken({
@@ -364,7 +365,7 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
     logger.error(`Error while refreshing access token: ${error}`);
     res
       .status(500)
-      .send({ success: false, message: "Error while refreshing access token" });
+      .json({ success: false, message: "Error while refreshing access token" });
   }
 };
 
@@ -582,8 +583,8 @@ export const googleLogin = async (req: Request, res: Response) => {
         sameSite: "strict",
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
-      
-    const { password: _, ...user } = existUser;
+
+      const { password: _, ...user } = existUser;
 
       return res.status(200).json({
         success: true,

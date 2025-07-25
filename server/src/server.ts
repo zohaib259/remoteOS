@@ -10,6 +10,7 @@ import authRoutes from "./routes/auth.router";
 import RedisStore from "rate-limit-redis";
 import cookieParser from "cookie-parser";
 import collabRoomRoutes from "./routes/collabRoom.router";
+import channelRoutes from "./routes/channel.router";
 
 dotenv.config();
 
@@ -107,6 +108,16 @@ app.use(
     next();
   },
   collabRoomRoutes
+);
+
+//  room routes
+app.use(
+  "/api/room/channel",
+  (req: Request, res: Response, next: NextFunction) => {
+    (req as any).redisClient = redisClient;
+    next();
+  },
+  channelRoutes
 );
 
 const PORT = process.env.PORT || 3000;

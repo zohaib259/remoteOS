@@ -108,3 +108,23 @@ export const collabRoomValidation = Joi.object({
       "array.base": "Team members must be an array",
     }),
 });
+
+// add channel validation
+export const addChannelValidation = Joi.object({
+  channelName: Joi.string().min(3).max(30).required().messages({
+    "string.min": "Channel name must be at least 3 characters",
+    "string.max": "Channel name cannot be more than 30 characters",
+    "string.empty": "Channel name is required",
+    "any.required": "Channel name is required",
+  }),
+  visibility: Joi.string().valid("public", "teamMembers").required().messages({
+    "string.base": "Visibility must be a string",
+    "string.empty": "Visibility is required",
+    "any.only": "Visibility must be either 'public' or 'teamMembers'",
+  }),
+  members: Joi.array().min(1).required().messages({
+    "array.min": "At least one member is required",
+    "array.empty": "Members are required",
+    "any.required": "Members are required",
+  }),
+});
