@@ -17,7 +17,6 @@ import {
 import type { RootState } from "@/store/store";
 import { useSelector } from "react-redux";
 import { Outlet, useNavigate } from "react-router-dom";
-import { RoomSidebar } from "@/components/collabRoom/roomSidebar";
 
 type NavItemType = {
   id: string;
@@ -59,7 +58,7 @@ const navItems: NavItemType[] = [
   },
 ];
 
-const SidebarWithHeader = () => {
+const CollabRoom = () => {
   const [active, setActive] = useState<string>("home");
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
   const navigate = useNavigate();
@@ -171,7 +170,7 @@ const SidebarWithHeader = () => {
         {/* Content Rendered Based on Active State */}
         <main className="flex-1  overflow-y-auto">
           <div>
-            <RoomSidebar type={active} channels={roomData[0]?.channel} />
+            <Outlet />
           </div>
         </main>
       </div>
@@ -179,4 +178,4 @@ const SidebarWithHeader = () => {
   );
 };
 
-export default SidebarWithHeader;
+export default CollabRoom;

@@ -1,4 +1,3 @@
-import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,25 +18,25 @@ export function Dropdown() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Ellipsis />
+        <Ellipsis className="cursor-pointer" />
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="start">
-        <DropdownMenuLabel>My Account</DropdownMenuLabel>
+        <DropdownMenuLabel>My Channel</DropdownMenuLabel>
         <DropdownMenuGroup>
           <DropdownMenuItem>
-            Profile
+            Add member
             <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
           </DropdownMenuItem>
           <DropdownMenuItem>
-            Billing
+            Delete channel
             <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
           </DropdownMenuItem>
           <DropdownMenuItem>
-            Settings
+            Privacy
             <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
           </DropdownMenuItem>
           <DropdownMenuItem>
-            Keyboard shortcuts
+            Setting
             <DropdownMenuShortcut>⌘K</DropdownMenuShortcut>
           </DropdownMenuItem>
         </DropdownMenuGroup>

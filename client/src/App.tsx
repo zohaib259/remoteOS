@@ -22,6 +22,8 @@ import GetStarted from "./pages/get-started/getStarted";
 import NotFoundPage from "./pages/404/404";
 import CollabRoom from "./pages/collab-Room/collabRoom";
 import { getCollabRomm } from "./store/collabRoom/collabRoom";
+import { ChannelLayout } from "./components/layouts/channel/channelLayout";
+import Channel from "./pages/channel/channel";
 
 function App() {
   const dispatch = useDispatch<AppDispatch>();
@@ -40,7 +42,7 @@ function App() {
           typeof reposnse?.payload === "object" &&
           reposnse?.payload?.success === true
         ) {
-          navigate("/collab-room");
+          navigate("/collab-room/home");
         } else {
           if (
             typeof reposnse?.payload === "object" &&
@@ -98,7 +100,12 @@ function App() {
               <CollabRoom />
             </ProtectedRoutes>
           }
-        ></Route>
+        >
+          <Route path="home" element={<ChannelLayout />}>
+            <Route path=":id" element={<Channel />} />
+          </Route>
+          <Route path="*" element={<NotFoundPage />} />
+        </Route>
 
         <Route path="*" element={<NotFoundPage />} />
       </Routes>

@@ -99,4 +99,97 @@ export const createChannel = async (req: Request, res: Response) => {
   }
 };
 
+// get channel by id
+export const getChannel = async (req: Request, res: Response) => {
+  logger.info(`getChannel endpoint hits`);
+  try {
+    const channelId = req.params.channelId;
+    const userId = req.user?.id;
 
+    if (!userId) {
+      logger.warn("Validation error: User ID is missing");
+      return res.status(400).json({
+        success: false,
+        message: "Validation error: User ID is missing",
+      });
+    }
+
+    if (!channelId) {
+      logger.warn("Validation error: Channel ID is missing");
+      return res.status(400).json({
+        success: false,
+        message: "Validation error: Channel ID is missing",
+      });
+    }
+
+    const userHasJoinedRoom = await prisma.collabRoom.findFirst({
+      where: {
+        id: 30,
+        collabRoomTeamMember: {
+          some: { userId: userId },
+        },
+      },
+    });
+    if (!userHasJoinedRoom) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User has not joined the room" });
+    }
+    const userHasJoinedChannel = await prisma.channel.findUnique({
+      where: {
+        id: +channelId,
+      },
+      include: {
+        channelTeamMembers: {
+          include: {
+            user: true,
+          },
+        },
+        channelAdmins: {
+          include: {
+            user: true,
+          },
+        },
+      },
+    });
+
+    if (!userHasJoinedChannel) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Channel not found" });
+    }
+
+    const cleanData = {
+      channelId: userHasJoinedChannel.id,
+      channelName: userHasJoinedChannel.name,
+      isPublic: userHasJoinedChannel.isPublic,
+      collabRoomId: userHasJoinedChannel.collabRoomId,
+      createdAt: userHasJoinedChannel.createdAt,
+
+      channelAdmins: userHasJoinedChannel.channelAdmins.map((admin) => ({
+        adminId: admin.id,
+        adminUserId: admin.user.id,
+        adminName: admin.user.name,
+        profilePicture: admin.user?.profilePicture,
+      })),
+
+      channelMembers: userHasJoinedChannel.channelTeamMembers.map((member) => ({
+        memberId: member.id,
+        memberUserId: member.user.id,
+        memberName: member.user.name,
+        memberEmail: member.user.email,
+        memberprofilePicture: member.user.profilePicture,
+      })),
+    };
+
+    res.json({
+      success: true,
+      data: cleanData,
+    });
+  } catch (error) {
+    logger.error(`Error in getChannel endpoint: ${error}`);
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal server error" });
+  }
+};

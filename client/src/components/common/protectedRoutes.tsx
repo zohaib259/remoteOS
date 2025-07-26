@@ -27,7 +27,7 @@ const ProtectedRoutes = ({
     ((!roomData || roomData === null) &&
       location.pathname.includes("/collab-room"))
   ) {
-    return <Navigate to={"/get-started"} />;
+    return <Navigate to={"/get-started/home"} />;
   }
 
   return children;

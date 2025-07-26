@@ -26,7 +26,7 @@ import { X } from "lucide-react";
 import { useState } from "react";
 import type { AppDispatch, RootState } from "@/store/store";
 import toast from "react-hot-toast";
-import { createChannel } from "@/store/channels/channel";
+import { createChannel } from "@/store/channels/channelSlice";
 
 interface memberTypes {
   name: string;
