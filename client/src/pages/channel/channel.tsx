@@ -20,11 +20,13 @@ const Channel = () => {
 
   const channelId = useParams<{ id: string }>().id ?? "";
 
+  console.log(gettingChannel);
   useEffect(() => {
     dispatch(getChannel(channelId));
   }, [channelId]);
 
   if (gettingChannel) {
+    console.log(gettingChannel);
     return (
       <div className="w-full min-h-screen flex justify-center items-center">
         <HashLoader size={40} color={"#065b56"} />

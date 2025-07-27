@@ -62,6 +62,7 @@ const channelSlice = createSlice({
       // Get channel
       .addCase(getChannel.pending, (state) => {
         state.isLoading = true;
+        state.gettingChannel = true;
       })
       .addCase(getChannel.fulfilled, (state, action) => {
         state.isLoading = false;
@@ -70,6 +71,7 @@ const channelSlice = createSlice({
       })
       .addCase(getChannel.rejected, (state) => {
         state.isLoading = false;
+        state.gettingChannel = true;
       });
   },
 });

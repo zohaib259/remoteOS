@@ -20,8 +20,12 @@ model User {
   collabRoom CollabRoom[]
   channelAdmin ChannelAdmin[]
   channelTeamMember ChannelTeamMember[]
+  lastSeen DateTime?
+  isOnline DateTime?
+  channelMessage ChannelMessage[]
   verified  Boolean  @default(false)
   collabRoomTeamMember CollabRoomTeamMember[]
+  channelMessageReply ChannelMessageReply[]
   createdAt DateTime @default(now())
 }
 
@@ -67,11 +71,13 @@ model Channel {
   isPublic      Boolean   @default(false)
   collabRoomId  Int
   collabRoom    CollabRoom @relation(fields: [collabRoomId], references: [id])
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-
   channelAdmins        ChannelAdmin[]
   channelTeamMembers   ChannelTeamMember[]
+  channelMessage ChannelMessage[]
+  channelMessageReply ChannelMessageReply[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+ 
 }
 
 model ChannelAdmin {
@@ -94,3 +100,35 @@ model ChannelTeamMember {
   @@unique([channelId, userId])
 }
 
+model ChannelMessage {
+  id              Int              @id @default(autoincrement())
+  content         String
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  //  Sender of the message
+  senderId        Int
+  sender          User             @relation(fields: [senderId], references: [id])
+
+  //  Channel the message belongs to
+  channelId       Int
+  channel         Channel          @relation(fields: [channelId], references: [id])
+
+  channelMessageReply ChannelMessageReply[]
+}
+
+model ChannelMessageReply {
+  id              Int              @id @default(autoincrement())
+  content         String
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  parentMessageId Int
+  parentMessage ChannelMessage @relation(fields: [parentMessageId],references:[id])
+
+  senderId        Int
+  sender          User             @relation(fields: [senderId], references: [id])
+
+  channelId       Int
+  channel         Channel          @relation(fields: [channelId], references: [id])
+}
