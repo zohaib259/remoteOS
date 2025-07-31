@@ -102,16 +102,17 @@ model ChannelTeamMember {
 
 model ChannelMessage {
   id              Int              @id @default(autoincrement())
+  senderId        Int
+  sender          User             @relation(fields: [senderId], references: [id])
   content         String
+  mediaUrl        String?
+  messageStatus   String           @default("send")
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
 
-  //  Sender of the message
-  senderId        Int
-  sender          User             @relation(fields: [senderId], references: [id])
 
   //  Channel the message belongs to
-  channelId       Int
+  channelId       Int 
   channel         Channel          @relation(fields: [channelId], references: [id])
 
   channelMessageReply ChannelMessageReply[]

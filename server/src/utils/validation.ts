@@ -128,3 +128,22 @@ export const addChannelValidation = Joi.object({
     "any.required": "Members are required",
   }),
 });
+
+// Send message validation
+export const sendMessageValidation = Joi.object({
+  channelId: Joi.number().required().min(1).messages({
+    "number.base": "Channel ID must be a number",
+    "number.min": "Channel ID must be at least 1",
+    "number.empty": "Channel ID is required",
+  }),
+
+  content: Joi.string().min(1).max(2000).required().messages({
+    "string.min": "Content must be at least 1 character",
+    "string.max": "Content cannot be more than 2000 characters",
+    "string.empty": "Content is required",
+  }),
+
+  mediaUrl: Joi.string().uri().optional().messages({
+    "string.uri": "Media URL must be a valid URI",
+  }),
+});

@@ -28,7 +28,7 @@ export const createChannel = createAsyncThunk<
     );
   }
 });
-
+ 
 // get channel by id
 export const getChannel = createAsyncThunk<
   { success: boolean; message: string; data: string },

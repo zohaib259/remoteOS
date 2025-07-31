@@ -9,7 +9,7 @@ import type { RootState } from "@/store/store";
 import { Outlet, useNavigate } from "react-router-dom";
 
 export function ChannelLayout() {
-  const { roomData } = useSelector((state: RootState) => state.collaRoom);
+  const { roomData } = useSelector((state: RootState) => state.collabRoom);
   const navigate = useNavigate();
   const isAdmin = true;
   const [isOpen, setIsOpen] = useState(true);
@@ -44,12 +44,12 @@ export function ChannelLayout() {
   };
 
   return (
-    <div className="flex">
+    <div className="flex h-full">
       {/* Sidebar */}
       <div
         ref={sidebarRef}
         style={{ width: sidebarWidth }}
-        className="bg-custom-900 h-screen text-white flex flex-col"
+        className="bg-custom-900 h-full text-white flex flex-col"
       >
         {type === "home" ? (
           <div className="w-full flex flex-col items-center pt-10 gap-8">
@@ -115,7 +115,7 @@ export function ChannelLayout() {
       />
 
       {/* Main Content */}
-      <div className="w-full">
+      <div className="w-full h-full">
         <Outlet />
       </div>
     </div>

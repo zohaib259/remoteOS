@@ -1,4 +1,3 @@
-import { AddChannelDialog } from "@/components/channel/addChannelDialog";
 import { Dropdown } from "@/components/common/dropdown";
 import { getChannel } from "@/store/channels/channelSlice";
 import type { AppDispatch, RootState } from "@/store/store";
@@ -10,9 +9,13 @@ import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { useParams } from "react-router-dom";
 import { HashLoader } from "react-spinners";
+import MessageInput from "../../components/messages/messageInput ";
+import { clearFiles, getSignature } from "@/store/messages/messagesSlice";
+import { FilePreview } from "@/components/common/file-preview";
 
 const Channel = () => {
   const dispatch = useDispatch<AppDispatch>();
+  const { files } = useSelector((state: RootState) => state.message);
 
   const { channelData, gettingChannel } = useSelector(
     (state: RootState) => state.channel
@@ -20,22 +23,28 @@ const Channel = () => {
 
   const channelId = useParams<{ id: string }>().id ?? "";
 
-  console.log(gettingChannel);
   useEffect(() => {
     dispatch(getChannel(channelId));
   }, [channelId]);
 
   if (gettingChannel) {
-    console.log(gettingChannel);
     return (
-      <div className="w-full min-h-screen flex justify-center items-center">
+      <div className="w-full min-h-full flex justify-center items-center">
         <HashLoader size={40} color={"#065b56"} />
       </div>
     );
   }
+  const handleSendMessage = async (data: any) => {
+    console.log(data);
+
+    if (data.length === 0 || data === undefined) return;
+    const signatureResponse = await dispatch(getSignature());
+    dispatch(clearFiles());
+    console.log(signatureResponse);
+  };
 
   return (
-    <div className="flex flex-col min-h-screen bg-white text-black">
+    <div className="flex flex-col h-full w-full bg-white text-black ">
       {/* Channel Header */}
       <div className="flex items-center justify-between w-full h-18 px-4 shadow-sm">
         <div className="flex items-center space-x-2 text-black">
@@ -63,8 +72,18 @@ const Channel = () => {
       </div>
 
       {/* Channel Content */}
-      <div className="flex-1 p-4">
-        <p className="text-gray-300">Welcome to the channel!</p>
+      <div className="flex flex-col p-4 overflow-hidden w-full h-full">
+        <div className=" w-full h-full  ">
+          {" "}
+          <h1>hey</h1>
+        </div>
+
+        {/* file preview */}
+        {files && <FilePreview handleSendMessage={handleSendMessage} />}
+
+        <div className=" flex sticky bottom-0  w-full ">
+          <MessageInput handleSendMessage={handleSendMessage} />
+        </div>
       </div>
     </div>
   );

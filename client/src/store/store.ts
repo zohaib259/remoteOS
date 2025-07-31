@@ -2,12 +2,14 @@ import { configureStore } from "@reduxjs/toolkit";
 import authReducer from "./auth/auth";
 import collabRoomReducer from "./collabRoom/collabRoom";
 import channelReducer from "./channels/channelSlice";
+import messageReducer from "./messages/messagesSlice";
 
 export const store = configureStore({
   reducer: {
     auth: authReducer,
-    collaRoom: collabRoomReducer,
+    collabRoom: collabRoomReducer,
     channel: channelReducer,
+    message: messageReducer,
   },
 });
 

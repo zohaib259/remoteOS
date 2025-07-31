@@ -41,7 +41,7 @@ interface FormValues {
 
 export function AddChannelDialog() {
   const dispatch = useDispatch<AppDispatch>();
-  const { roomData } = useSelector((state: RootState) => state.collaRoom);
+  const { roomData } = useSelector((state: RootState) => state.collabRoom);
   const teamMembers: memberTypes[] = roomData[0]?.roomTeamMember || [];
 
   const [open, setOpen] = useState(false);

@@ -32,7 +32,7 @@ function App() {
     (state: RootState) => state.auth
   );
   const { roomData, isFetchingRoom } = useSelector(
-    (state: RootState) => state.collaRoom
+    (state: RootState) => state.collabRoom
   );
 
   useEffect(() => {

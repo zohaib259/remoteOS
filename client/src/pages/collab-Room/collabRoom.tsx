@@ -62,13 +62,13 @@ const CollabRoom = () => {
   const [active, setActive] = useState<string>("home");
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
   const navigate = useNavigate();
-  const { roomData } = useSelector((state: RootState) => state.collaRoom);
+  const { roomData } = useSelector((state: RootState) => state.collabRoom);
 
   return (
     <div className="flex h-screen text-white">
       {/* Sidebar */}
       <aside
-        className={`fixed top-0 left-0 h-full w-64 bg-custom-950 p-4 flex flex-col justify-between z-20 transition-transform duration-300 ease-in-out ${
+        className={`fixed top-0 left-0 h-screen w-64 bg-custom-950 p-4 flex flex-col justify-between z-20 transition-transform duration-300 ease-in-out ${
           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
         } md:translate-x-0 md:w-20`}
       >
@@ -128,7 +128,7 @@ const CollabRoom = () => {
       )}
 
       {/* Main Content Layout */}
-      <div className="flex-1 flex flex-col md:ml-20">
+      <div className="flex-1 flex flex-col md:ml-20 h-screen">
         {/* Header */}
         <header className="bg-custom-950 px-4 py-2 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
@@ -168,10 +168,8 @@ const CollabRoom = () => {
         </header>
 
         {/* Content Rendered Based on Active State */}
-        <main className="flex-1  overflow-y-auto">
-          <div>
-            <Outlet />
-          </div>
+        <main className="flex-1 h-full v  overflow-hidden">
+          <Outlet />
         </main>
       </div>
     </div>
