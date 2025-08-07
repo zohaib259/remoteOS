@@ -1,7 +1,7 @@
 import { Dropdown } from "@/components/common/dropdown";
 import { getChannel } from "@/store/channels/channelSlice";
 import type { AppDispatch, RootState } from "@/store/store";
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FaVideo, FaHeadphonesAlt } from "react-icons/fa";
 import { GoPersonFill } from "react-icons/go";
 import { HiHashtag } from "react-icons/hi";
@@ -10,11 +10,19 @@ import { useDispatch } from "react-redux";
 import { useParams } from "react-router-dom";
 import { HashLoader } from "react-spinners";
 import MessageInput from "../../components/messages/messageInput ";
-import { clearFiles, getSignature } from "@/store/messages/messagesSlice";
+import {
+  clearFiles,
+  createMessage,
+  getSignature,
+  uploadToCloudinary,
+} from "@/store/messages/messagesSlice";
 import { FilePreview } from "@/components/common/file-preview";
+import socket from "@/utils/socket";
 
 const Channel = () => {
   const dispatch = useDispatch<AppDispatch>();
+  const controllerRef = useRef<AbortController | null>(null);
+  const [progress, setProgress] = useState(0);
   const { files } = useSelector((state: RootState) => state.message);
 
   const { channelData, gettingChannel } = useSelector(
@@ -25,6 +33,7 @@ const Channel = () => {
 
   useEffect(() => {
     dispatch(getChannel(channelId));
+    // socket.on("newMessage")
   }, [channelId]);
 
   if (gettingChannel) {
@@ -35,12 +44,43 @@ const Channel = () => {
     );
   }
   const handleSendMessage = async (data: any) => {
-    console.log(data);
+    try {
+      dispatch(clearFiles());
+      const controller = new AbortController();
+      controllerRef.current = controller;
 
-    if (data.length === 0 || data === undefined) return;
-    const signatureResponse = await dispatch(getSignature());
-    dispatch(clearFiles());
-    console.log(signatureResponse);
+      if (data.length === 0 || data === undefined) return;
+      const signatureResponse = await dispatch(getSignature()).unwrap();
+
+      let cloudinaryResponse;
+      if (data?.file.length > 0) {
+        cloudinaryResponse = await dispatch(
+          uploadToCloudinary({
+            file: data.file[0],
+            signature: signatureResponse,
+            signal: controller.signal,
+            onProgress: (p) => setProgress(p),
+          })
+        ).unwrap();
+      }
+
+      const createMessageResponse = await dispatch(
+        createMessage({
+          channelId: channelId,
+          content: data.message,
+          mediaUrl: cloudinaryResponse?.url || null,
+          mediaPublicId: cloudinaryResponse?.public_id || null,
+        })
+      );
+      if (
+        typeof createMessageResponse?.payload === "object" &&
+        createMessageResponse?.payload?.success
+      ) {
+        setProgress(0);
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
@@ -75,14 +115,25 @@ const Channel = () => {
       <div className="flex flex-col p-4 overflow-hidden w-full h-full">
         <div className=" w-full h-full  ">
           {" "}
-          <h1>hey</h1>
+          <h1 className=" bg-black">
+            {" "}
+            <span className="text-white text-sm font-medium">{progress}%</span>
+          </h1>
         </div>
 
         {/* file preview */}
-        {files && <FilePreview handleSendMessage={handleSendMessage} />}
+        {files && (
+          <FilePreview
+            progress={progress}
+            handleSendMessage={handleSendMessage}
+          />
+        )}
 
         <div className=" flex sticky bottom-0  w-full ">
-          <MessageInput handleSendMessage={handleSendMessage} />
+          <MessageInput
+            progress={progress}
+            handleSendMessage={handleSendMessage}
+          />
         </div>
       </div>
     </div>

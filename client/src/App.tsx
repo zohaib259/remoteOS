@@ -1,10 +1,4 @@
-import {
-  Outlet,
-  Route,
-  BrowserRouter as Router,
-  Routes,
-  useNavigate,
-} from "react-router-dom";
+import { Route, Routes, useNavigate } from "react-router-dom";
 import { Register } from "./pages/auth/register";
 import { Login } from "./pages/auth/login";
 import { Toaster } from "react-hot-toast";
@@ -30,7 +24,7 @@ function App() {
   const navigate = useNavigate();
   const { isCheckingAuth, user } = useSelector(
     (state: RootState) => state.auth
-  );
+  ) as { isCheckingAuth: boolean; user: any };
   const { roomData, isFetchingRoom } = useSelector(
     (state: RootState) => state.collabRoom
   );

@@ -143,7 +143,10 @@ export const sendMessageValidation = Joi.object({
     "string.empty": "Content is required",
   }),
 
-  mediaUrl: Joi.string().uri().optional().messages({
+  mediaUrl: Joi.string().allow(null).optional().messages({
     "string.uri": "Media URL must be a valid URI",
+  }),
+  mediaPublicId: Joi.string().allow(null).optional().messages({
+    "string.empty": "Media Public ID cannot be empty",
   }),
 });

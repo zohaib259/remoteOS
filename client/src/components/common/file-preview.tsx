@@ -15,9 +15,10 @@ import { removeFileAt } from "@/store/messages/messagesSlice";
 
 interface FilePreviewProps {
   handleSendMessage: (data: any) => Promise<void>;
+  progress: number;
 }
 
-export function FilePreview({ handleSendMessage }: FilePreviewProps) {
+export function FilePreview({ handleSendMessage, progress }: FilePreviewProps) {
   const { files } = useSelector((state: RootState) => state.message);
   const dispatch = useDispatch<AppDispatch>();
 
@@ -136,7 +137,10 @@ export function FilePreview({ handleSendMessage }: FilePreviewProps) {
 
             {/* Message Input - Fixed at bottom */}
             <div className="flex-shrink-0 w-full">
-              <MessageInput handleSendMessage={handleSendMessage} />
+              <MessageInput
+                progress={progress}
+                handleSendMessage={handleSendMessage}
+              />
             </div>
           </div>
         </AlertDialogFooter>

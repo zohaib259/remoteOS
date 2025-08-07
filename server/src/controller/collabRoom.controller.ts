@@ -173,8 +173,7 @@ export const getCollabRoomsWithChannelsByUserId = async (
   res: Response
 ) => {
   try {
-    // const userId = 1;
-    const userId = req?.user.id;
+    const userId = req?.user?.id;
 
     if (!userId || isNaN(userId)) {
       return res.status(400).json({
@@ -185,6 +184,12 @@ export const getCollabRoomsWithChannelsByUserId = async (
 
     const user = await prisma.user.findUnique({
       where: { id: userId },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        profilePicture: true,
+      },
     });
 
     if (!user) {
@@ -194,16 +199,13 @@ export const getCollabRoomsWithChannelsByUserId = async (
       });
     }
 
-    // Get all collab rooms where user is either admin or team member
-    const collabRoom = await prisma.collabRoom.findMany({
+    const collabRooms = await prisma.collabRoom.findMany({
       where: {
         OR: [
           { adminId: userId },
           {
             collabRoomTeamMember: {
-              some: {
-                userId: userId,
-              },
+              some: { userId },
             },
           },
         ],
@@ -218,7 +220,9 @@ export const getCollabRoomsWithChannelsByUserId = async (
           },
         },
         collabRoomTeamMember: {
-          include: {
+          select: {
+            userId: true,
+            profession: true,
             user: {
               select: {
                 id: true,
@@ -232,10 +236,10 @@ export const getCollabRoomsWithChannelsByUserId = async (
         channel: {
           include: {
             channelAdmins: {
-              include: {
+              select: {
+                id: true,
                 user: {
                   select: {
-                    id: true,
                     name: true,
                     email: true,
                     profilePicture: true,
@@ -244,10 +248,10 @@ export const getCollabRoomsWithChannelsByUserId = async (
               },
             },
             channelTeamMembers: {
-              include: {
+              select: {
+                userId: true,
                 user: {
                   select: {
-                    id: true,
                     name: true,
                     email: true,
                     profilePicture: true,
@@ -263,15 +267,16 @@ export const getCollabRoomsWithChannelsByUserId = async (
       },
     });
 
-    if (!collabRoom || collabRoom.length === 0) {
+    if (!collabRooms || collabRooms.length === 0) {
       logger.info("No collab room found");
       return res
         .status(404)
         .json({ success: false, message: "No collab room found" });
     }
 
-    const collabRoomDataArray = collabRoom.map((room) => {
-      const isAdmin = userId === room.admin?.id;
+    // Minimal transformation to match exact frontend expectations
+    const collabRoomDataArray = collabRooms.map((room) => {
+      const isAdmin = room.adminId === userId;
 
       return {
         id: room.id,
@@ -281,64 +286,48 @@ export const getCollabRoomsWithChannelsByUserId = async (
         createdAt: room.createdAt,
         updatedAt: room.updatedAt,
 
-        admin: isAdmin
-          ? {
-              id: room.admin.id,
-              name: room.admin.name,
-              email: room.admin.email,
-              profilePicture: room.admin.profilePicture,
+        admin: isAdmin ? room.admin : null,
+        user: !isAdmin ? user : null,
+
+        roomTeamMember: room.collabRoomTeamMember.map((member) => ({
+          userId: member.userId,
+          name: member.user.name,
+          email: member.user.email,
+          profession: member.profession,
+          profilePicture: member.user.profilePicture,
+        })),
+
+        channel: room.channel
+          .map((channel) => {
+            const isMember = channel.channelTeamMembers.some(
+              (member) => member.userId === userId
+            );
+
+            if (channel.isPublic || isMember) {
+              return {
+                channelId: channel.id,
+                name: channel.name,
+                isPublic: channel.isPublic,
+                channelAdmins: channel.channelAdmins.map((admin) => ({
+                  adminId: admin.id,
+                  adminName: admin.user.name,
+                  adminemail: admin.user.email,
+                  adminProfilePicture: admin.user.profilePicture,
+                })),
+                channelTeamMembers: channel.channelTeamMembers.map(
+                  (member) => ({
+                    id: member.userId,
+                    name: member.user.name,
+                    email: member.user.email,
+                    profilePicture: member.user.profilePicture,
+                  })
+                ),
+              };
             }
-          : null,
 
-        user: !isAdmin
-          ? {
-              id: user.id,
-              name: user.name,
-              email: user.email,
-              profilePicture: user.profilePicture,
-            }
-          : null,
-
-        roomTeamMember:
-          room.collabRoomTeamMember?.map((member) => ({
-            userId: member.userId,
-            name: member.user.name,
-            email: member.user.email,
-            profession: member.profession,
-            profilePicture: member.user.profilePicture,
-          })) || [],
-
-        channel:
-          room.channel
-            ?.map((data) => {
-              const isMember = data.channelTeamMembers?.some(
-                (member) => member.userId === userId
-              );
-
-              if (data.isPublic || isMember) {
-                return {
-                  channelId: data.id,
-                  name: data.name,
-                  isPublic: data.isPublic,
-                  channelAdmins:
-                    data.channelAdmins?.map((admin) => ({
-                      adminId: admin.id,
-                      adminName: admin.user.name,
-                      adminemail: admin.user.email,
-                      adminProfilePicture: admin.user.profilePicture,
-                    })) || [],
-                  channelTeamMembers: data?.channelTeamMembers.map((member) => {
-                    id: member?.userId;
-                    name: member?.user.name;
-                    email: member?.user.email;
-                    profilePicture: member?.user.profilePicture;
-                  }),
-                };
-              }
-
-              return null;
-            })
-            .filter(Boolean) || [],
+            return null;
+          })
+          .filter(Boolean),
       };
     });
 
@@ -346,10 +335,10 @@ export const getCollabRoomsWithChannelsByUserId = async (
       success: true,
       message: "Collab rooms retrieved successfully",
       data: collabRoomDataArray,
-      count: collabRoom.length,
+      count: collabRoomDataArray.length,
     });
   } catch (error: any) {
-    console.error("Error fetching collab rooms:", error);
+    logger.error("Error fetching collab rooms:", error);
     return res.status(500).json({
       success: false,
       message: "Internal server error",

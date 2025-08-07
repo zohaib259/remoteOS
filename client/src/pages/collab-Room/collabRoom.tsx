@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Home,
   MessageCircle,
@@ -17,6 +17,7 @@ import {
 import type { RootState } from "@/store/store";
 import { useSelector } from "react-redux";
 import { Outlet, useNavigate } from "react-router-dom";
+import socket from "@/utils/socket";
 
 type NavItemType = {
   id: string;
@@ -63,6 +64,23 @@ const CollabRoom = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
   const navigate = useNavigate();
   const { roomData } = useSelector((state: RootState) => state.collabRoom);
+  const { user } = useSelector((state: RootState) => state.auth);
+
+  useEffect(() => {
+    if (user) {
+      socket.connect();
+      socket.emit("joinRoom", roomData[0]?.id, user.id);
+
+      socket.on("newMessage", (data: string[]) => {
+        console.log(data);
+      });
+
+      return () => {
+        socket.emit("leaveRoom", roomData[0]?.id, user.id);
+        socket.disconnect();
+      };
+    }
+  }, [user, roomData[0]?.id]);
 
   return (
     <div className="flex h-screen text-white">

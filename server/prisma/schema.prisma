@@ -103,9 +103,10 @@ model ChannelTeamMember {
 model ChannelMessage {
   id              Int              @id @default(autoincrement())
   senderId        Int
-  sender          User             @relation(fields: [senderId], references: [id])
+  user          User             @relation(fields: [senderId], references: [id])
   content         String
   mediaUrl        String?
+  mediaPublicId String?
   messageStatus   String           @default("send")
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
@@ -121,14 +122,16 @@ model ChannelMessage {
 model ChannelMessageReply {
   id              Int              @id @default(autoincrement())
   content         String
+   mediaUrl        String?
+  mediaPublicId String?
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
 
   parentMessageId Int
   parentMessage ChannelMessage @relation(fields: [parentMessageId],references:[id])
 
-  senderId        Int
-  sender          User             @relation(fields: [senderId], references: [id])
+  senderId          Int
+  user          User             @relation(fields: [senderId], references: [id])
 
   channelId       Int
   channel         Channel          @relation(fields: [channelId], references: [id])

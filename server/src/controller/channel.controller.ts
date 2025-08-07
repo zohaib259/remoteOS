@@ -25,7 +25,6 @@ export const createChannel = async (req: Request, res: Response) => {
 
     const userHasJoinedRoom = await prisma.collabRoom.findFirst({
       where: {
-        id: 30,
         collabRoomTeamMember: {
           some: { userId: userId },
         },
@@ -44,9 +43,11 @@ export const createChannel = async (req: Request, res: Response) => {
     });
 
     if (existChannel) {
-      return res
-        .status(409)
-        .json({ success: false, message: "Channel already exists" });
+      logger.warn(`Channel already exist with name ${channelName}`);
+      return res.status(409).json({
+        success: false,
+        message: `Channel already exists with name ${channelName}`,
+      });
     }
 
     if (userId !== userHasJoinedRoom.adminId) {
@@ -102,6 +103,7 @@ export const createChannel = async (req: Request, res: Response) => {
 // get channel by id
 export const getChannel = async (req: Request, res: Response) => {
   logger.info(`getChannel endpoint hits`);
+
   try {
     const channelId = req.params.channelId;
     const userId = req.user?.id;
@@ -124,56 +126,85 @@ export const getChannel = async (req: Request, res: Response) => {
 
     const userHasJoinedRoom = await prisma.collabRoom.findFirst({
       where: {
-        id: 30,
+        channel: {
+          some: {
+            id: +channelId,
+          },
+        },
         collabRoomTeamMember: {
           some: { userId: userId },
         },
       },
     });
+
     if (!userHasJoinedRoom) {
       return res
         .status(404)
         .json({ success: false, message: "User has not joined the room" });
     }
-    const userHasJoinedChannel = await prisma.channel.findUnique({
+
+    const channel = await prisma.channel.findUnique({
       where: {
         id: +channelId,
       },
-      include: {
-        channelTeamMembers: {
-          include: {
-            user: true,
+      select: {
+        id: true,
+        name: true,
+        isPublic: true,
+        collabRoomId: true,
+        createdAt: true,
+
+        channelAdmins: {
+          select: {
+            id: true,
+            user: {
+              select: {
+                id: true,
+                name: true,
+                profilePicture: true,
+              },
+            },
           },
         },
-        channelAdmins: {
-          include: {
-            user: true,
+
+        channelTeamMembers: {
+          select: {
+            id: true,
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                profilePicture: true,
+              },
+            },
           },
         },
       },
     });
 
-    if (!userHasJoinedChannel) {
+    if (!channel) {
       return res
         .status(404)
         .json({ success: false, message: "Channel not found" });
     }
 
+    // Create cleanData object with exact shape
     const cleanData = {
-      channelId: userHasJoinedChannel.id,
-      channelName: userHasJoinedChannel.name,
-      isPublic: userHasJoinedChannel.isPublic,
-      collabRoomId: userHasJoinedChannel.collabRoomId,
-      createdAt: userHasJoinedChannel.createdAt,
+      channelId: channel.id,
+      channelName: channel.name,
+      isPublic: channel.isPublic,
+      collabRoomId: channel.collabRoomId,
+      createdAt: channel.createdAt,
 
-      channelAdmins: userHasJoinedChannel.channelAdmins.map((admin) => ({
+      channelAdmins: channel.channelAdmins.map((admin) => ({
         adminId: admin.id,
         adminUserId: admin.user.id,
         adminName: admin.user.name,
-        profilePicture: admin.user?.profilePicture,
+        profilePicture: admin.user.profilePicture,
       })),
 
-      channelMembers: userHasJoinedChannel.channelTeamMembers.map((member) => ({
+      channelMembers: channel.channelTeamMembers.map((member) => ({
         memberId: member.id,
         memberUserId: member.user.id,
         memberName: member.user.name,
@@ -182,7 +213,7 @@ export const getChannel = async (req: Request, res: Response) => {
       })),
     };
 
-    res.json({
+    return res.json({
       success: true,
       data: cleanData,
     });

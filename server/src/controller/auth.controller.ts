@@ -66,7 +66,7 @@ export const register = async (req: Request, res: Response) => {
     await sendEmail(email, "Opt", otp); // Send the plain OTP to the user
     res.status(201).json({
       success: true,
-      message: "we have sent you an OTP via email",
+      message: `we have sent you an OTP via email ${otp}`,
     });
   } catch (error) {
     logger.error(`Error creating user: ${error}`);

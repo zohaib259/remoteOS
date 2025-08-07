@@ -4,7 +4,7 @@ import { useRef } from "react";
 import { CiCirclePlus } from "react-icons/ci";
 import { useDispatch } from "react-redux";
 
-const FileUpload = () => {
+const FileUpload = ({ progress }: { progress: number }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dispatch = useDispatch<AppDispatch>();
 
@@ -29,6 +29,7 @@ const FileUpload = () => {
       />
 
       <input
+        disabled={progress > 0}
         type="file"
         multiple
         onChange={handleFileChange}

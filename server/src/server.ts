@@ -11,6 +11,10 @@ import RedisStore from "rate-limit-redis";
 import cookieParser from "cookie-parser";
 import collabRoomRoutes from "./routes/collabRoom.router";
 import channelRoutes from "./routes/channel.router";
+import { Server, Socket } from "socket.io";
+import http from "http";
+import { initializeSocket, registerSocketHandlers } from "./socket/socket_io";
+import { createMessageRouter } from "./routes/messages.router";
 
 dotenv.config();
 
@@ -58,7 +62,9 @@ app.use(helmet());
 app.use(errorhandler);
 app.use(limiter);
 
-const allowedOrigins = ["http://localhost:5173", process.env.CLIENT_URL];
+const allowedOrigins = ["http://localhost:5173", process.env.CLIENT_URL].filter(
+  Boolean
+) as (string | RegExp)[];
 
 app.use(
   cors({
@@ -90,6 +96,22 @@ app.use(
   }
 );
 
+const server = http.createServer(app);
+
+const io = initializeSocket(server);
+
+// ✅ Register socket event handlers
+io.on("connection", (socket) => {
+  console.log("⚡ Client connected:", socket.id);
+
+  // Call external file with listeners
+  registerSocketHandlers(socket);
+
+  socket.on("disconnect", () => {
+    console.log("❌ Client disconnected:", socket.id);
+  });
+});
+
 // Auth routes
 app.use(
   "/api/auth",
@@ -120,9 +142,19 @@ app.use(
   channelRoutes
 );
 
+// Message routes
+app.use(
+  "/api/room/channel/messages",
+  (req: Request, res: Response, next: NextFunction) => {
+    (req as any).redisClient = redisClient;
+    next();
+  },
+  createMessageRouter(io)
+);
+
 const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   logger.info(`Server is running on port ${PORT}`);
 });
 

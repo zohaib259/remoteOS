@@ -8,8 +8,10 @@ import axios, { type AxiosProgressEvent } from "axios";
 
 interface messagesStatestypes {
   isLoading: boolean;
+  isSending: boolean;
   uploadProgress: number;
   uploadedUrl: string | null;
+  uploadedPublicId: string | null;
   uploadError: string | null;
   files: File[];
 }
@@ -24,10 +26,19 @@ export type SignatureResponse = {
 
 const initialState: messagesStatestypes = {
   isLoading: false,
+  isSending: true,
   uploadProgress: 0,
   uploadedUrl: null,
+  uploadedPublicId: null,
   uploadError: null,
   files: [],
+};
+
+type CloudinaryUploadResponse = {
+  url: string;
+  secure_url: string;
+  public_id: string;
+  [key: string]: any; // optional fallback
 };
 
 //  Get Signature from backend
@@ -48,7 +59,7 @@ export const getSignature = createAsyncThunk<
 
 // ☁️ Upload file to Cloudinary
 export const uploadToCloudinary = createAsyncThunk<
-  string,
+  CloudinaryUploadResponse,
   {
     file: File;
     signature: SignatureResponse;
@@ -83,6 +94,38 @@ export const uploadToCloudinary = createAsyncThunk<
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || "Upload failed");
+    }
+  }
+);
+
+// Create Messsage
+export const createMessage = createAsyncThunk<
+  { success: boolean; message: string; data: any },
+  {
+    channelId: string | null;
+    content: string | null;
+    mediaUrl: string | null;
+    mediaPublicId: string | null;
+  },
+  { rejectValue: string }
+>(
+  "/room/channel/messages/send",
+  async (
+    { channelId, content, mediaUrl, mediaPublicId },
+    { rejectWithValue }
+  ) => {
+    try {
+      const response = await authApi.post(`/room/channel/messages/send`, {
+        channelId,
+        content,
+        mediaUrl,
+        mediaPublicId,
+      });
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message || "Create message failed"
+      );
     }
   }
 );
@@ -126,11 +169,23 @@ const messagesSlice = createSlice({
         state.uploadError = null;
       })
       .addCase(uploadToCloudinary.fulfilled, (state, action) => {
-        state.uploadedUrl = action.payload;
+        state.uploadedUrl = action.payload.url;
+        state.uploadedPublicId = action.payload.public_id;
         state.uploadProgress = 100;
       })
       .addCase(uploadToCloudinary.rejected, (state, action) => {
         state.uploadError = action.payload || "Upload failed";
+      })
+
+      // createMessage
+      .addCase(createMessage.pending, (state) => {
+        state.isSending = true;
+      })
+      .addCase(createMessage.fulfilled, (state) => {
+        state.isSending = false;
+      })
+      .addCase(createMessage.rejected, (state) => {
+        state.isSending = true;
       });
   },
 });
